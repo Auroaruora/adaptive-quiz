@@ -270,6 +270,47 @@ def _load_file(
     return inserted, skipped
 
 
+def _isolated(session: Session) -> list[str]:
+    """Finds questions sharing no tag with any other in their topic.
+
+    The two-tag rule in `_validate` checks the letter; this checks what
+    the rule is for. A question can carry two tags and still be isolated
+    if both are unique to it, and similarity only ever counts tags two
+    questions *share* — so such a question can never be offered as
+    practice for anything, which is the one failure the tag system exists
+    to prevent.
+
+    Args:
+        session: Open session; the caller owns the transaction.
+
+    Returns:
+        Descriptions of isolated questions, empty when all are connected.
+    """
+    rows = session.execute(
+        select(Question.id, Question.topic_id, Question.stem, Tag.slug)
+        .join(QuestionTag, QuestionTag.question_id == Question.id)
+        .join(Tag, Tag.id == QuestionTag.tag_id)
+    ).all()
+
+    tags: dict[int, set[str]] = {}
+    topic: dict[int, int] = {}
+    stem: dict[int, str] = {}
+    for question_id, topic_id, text, slug in rows:
+        tags.setdefault(question_id, set()).add(slug)
+        topic[question_id] = topic_id
+        stem[question_id] = text
+
+    lonely = []
+    for question_id, own in tags.items():
+        if not any(
+            own & other
+            for peer, other in tags.items()
+            if peer != question_id and topic[peer] == topic[question_id]
+        ):
+            lonely.append(f"{stem[question_id][:60]!r} shares no tag")
+    return lonely
+
+
 def _reset(session: Session) -> int:
     """Deletes all question content, refusing if any attempt references it.
 
@@ -329,6 +370,16 @@ def main() -> None:
         for path in paths:
             inserted, skipped = _load_file(session, path, tag_cache)
             print(f"{path.name}: {inserted} inserted, {skipped} skipped")
+
+        lonely = _isolated(session)
+        if lonely:
+            for item in lonely:
+                print(f"  {item}", file=sys.stderr)
+            sys.exit(
+                f"{len(lonely)} question(s) share no tag with any other in "
+                "their topic, so nothing can be offered as practice for "
+                "them. Add a broader tag."
+            )
 
     _report(engine)
     engine.dispose()

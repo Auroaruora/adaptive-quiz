@@ -411,8 +411,109 @@ only `constant-rule`, it had zero neighbours out of eighteen. Retagged
 `constant-rule, power-rule, polynomial` — honest, since differentiating a
 constant is the power rule's edge case — it has plenty.
 
-`scripts/seed.py` rejects a file where any question has fewer than two tags.
+`scripts/seed.py` enforces this twice, because the two checks catch
+different failures:
+
+- Before writing, it rejects any question with fewer than two tags.
+- After writing, it rejects the load if any question shares no tag with
+  another in its topic. A question can carry two tags and still be isolated
+  if both are unique to it, and nothing could ever be offered as practice
+  for it.
+
 Across the seeded 54, the least-connected question has four neighbours.
+
+### The tag vocabulary
+
+Kept here rather than only in the seed files, because the counts are what
+decide how much each tag is worth. Counts are questions carrying the tag
+within that topic; `*` marks a tag used in more than one topic.
+
+**A tag used once connects nothing.** Similarity only counts tags two
+questions *share*, so a singleton can never appear in an intersection. It
+still describes the question honestly and still reads well as an eyebrow on
+the quiz screen, but the connecting work is done entirely by the shared
+tags — which is why every question needs at least one of those.
+
+#### derivatives
+
+| Tag | Name | Questions |
+| --- | --- | --- |
+| `polynomial` | Polynomial | 11 |
+| `power-rule` | Power rule | 9 |
+| `chain-rule` | Chain rule | 4 |
+| `trigonometric` | Trigonometric | 4 |
+| `application` * | Application | 3 |
+| `exponential` * | Exponential | 3 |
+| `logarithmic` * | Logarithmic | 3 |
+| `product-rule` | Product rule | 3 |
+| `standard-derivative` | Standard derivative | 3 |
+| `evaluate-derivative` | Evaluate derivative | 2 |
+| `linear` | Linear | 2 |
+| `quotient-rule` | Quotient rule | 2 |
+| `constant-multiple` | Constant multiple | 1 |
+| `constant-rule` | Constant rule | 1 |
+| `implicit-differentiation` | Implicit differentiation | 1 |
+| `logarithmic-differentiation` | Logarithmic differentiation | 1 |
+| `solve-equation` | Solve equation | 1 |
+| `sum-rule` | Sum rule | 1 |
+
+#### logarithms
+
+| Tag | Name | Questions |
+| --- | --- | --- |
+| `logarithmic` * | Logarithmic | 13 |
+| `evaluate-log` | Evaluate log | 6 |
+| `exponential` * | Exponential | 6 |
+| `log-definition` | Log definition | 5 |
+| `log-product-rule` | Log product rule | 5 |
+| `exponential-equation` | Exponential equation | 4 |
+| `log-equation` | Log equation | 3 |
+| `change-of-base` | Change of base | 2 |
+| `extraneous-root` | Extraneous root | 2 |
+| `application` * | Application | 1 |
+| `exponent-rules` | Exponent rules | 1 |
+| `growth-model` | Growth model | 1 |
+| `log-power-rule` | Log power rule | 1 |
+| `log-quotient-rule` | Log quotient rule | 1 |
+| `quadratic-substitution` * | Quadratic substitution | 1 |
+
+#### trigonometry
+
+| Tag | Name | Questions |
+| --- | --- | --- |
+| `sine` | Sine | 9 |
+| `unit-circle` | Unit circle | 8 |
+| `cosine` | Cosine | 7 |
+| `pythagorean-identity` | Pythagorean identity | 6 |
+| `special-angle` | Special angle | 5 |
+| `quadrant-sign` | Quadrant sign | 3 |
+| `simplify-identity` | Simplify identity | 3 |
+| `tangent` | Tangent | 3 |
+| `trig-equation` | Trig equation | 3 |
+| `double-angle` | Double angle | 2 |
+| `graph-transformation` | Graph transformation | 2 |
+| `amplitude-shift` | Amplitude shift | 1 |
+| `angle-difference` | Angle difference | 1 |
+| `factoring` | Factoring | 1 |
+| `period` | Period | 1 |
+| `quadratic-substitution` * | Quadratic substitution | 1 |
+| `radians` | Radians | 1 |
+| `reciprocal-identity` | Reciprocal identity | 1 |
+| `reference-angle` | Reference angle | 1 |
+| `right-triangle` | Right triangle | 1 |
+
+#### Shared across topics
+
+| Tag | Topics |
+| --- | --- |
+| `application` | derivatives, logarithms |
+| `exponential` | derivatives, logarithms |
+| `logarithmic` | derivatives, logarithms |
+| `quadratic-substitution` | logarithms, trigonometry |
+
+Selection never crosses topics, so these do no work today. They are kept
+consistent so that a cross-topic view — "you struggle with exponentials
+wherever they appear" — needs no retagging later.
 
 ---
 
