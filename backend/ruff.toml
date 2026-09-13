@@ -6,3 +6,9 @@ ignore = ["D203", "D213"]
 
 [lint.pydocstyle]
 convention = "google"
+
+[lint.per-file-ignores]
+# A test's name states what it asserts. Requiring a docstring on every one
+# just restates that name, which is the noise the comment rules forbid.
+# Class docstrings are still required — they group the cases.
+"tests/**" = ["D102"]
