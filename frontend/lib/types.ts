@@ -56,10 +56,19 @@ export interface SeriesPoint {
   isCorrect: boolean;
 }
 
+/** A concept the student is currently getting wrong. */
+export interface WeakSpot {
+  slug: string;
+  name: string;
+  missed: number;
+}
+
 export interface TopicProgress {
   slug: string;
   name: string;
   summary: TopicSummary;
+  /** Worst first. Empty when nothing has been answered incorrectly. */
+  weakSpots: WeakSpot[];
   series: SeriesPoint[];
 }
 

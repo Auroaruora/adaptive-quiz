@@ -1,5 +1,6 @@
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { SegmentedBar } from "@/components/ui/SegmentedBar";
+import { WeakSpots } from "./WeakSpots";
 import { abilityScore } from "@/lib/ability";
 import type { TopicProgress } from "@/lib/types";
 
@@ -17,6 +18,11 @@ interface TopicCardProps {
  * zeros: a flat ability bar reading "no data yet" and an empty segmented
  * row. Zeros would imply a score of nothing, which is not what not-started
  * means.
+ *
+ * Weak spots sit where a chart of ability over time used to. A rising line
+ * described difficulty-matching, which is no longer what the app is for,
+ * and a student could not act on it. Named concepts with counts are the
+ * same information turned into something to do.
  */
 export function TopicCard({ topic, blurb, onStart }: TopicCardProps) {
   const { summary } = topic;
@@ -54,6 +60,8 @@ export function TopicCard({ topic, blurb, onStart }: TopicCardProps) {
         )}
       </div>
 
+      <WeakSpots spots={topic.weakSpots} started={placed} />
+
       <div className="flex flex-col gap-3">
         <div className="flex items-baseline justify-between gap-3">
           <span className="text-body text-ink">Skills mastered</span>
@@ -72,7 +80,7 @@ export function TopicCard({ topic, blurb, onStart }: TopicCardProps) {
       <button
         type="button"
         onClick={() => onStart(topic.slug)}
-        className="border-line text-ink hover:border-accent hover:text-accent active:bg-accent-soft text-body mt-auto w-full cursor-pointer rounded-sm border px-6 py-3 font-medium transition-colors"
+        className="border-line text-ink hover:border-accent hover:text-accent active:bg-accent-soft text-body w-full cursor-pointer rounded-sm border px-6 py-3 font-medium transition-colors"
       >
         {placed
           ? `Continue ${topic.name.split(" ")[0]}`

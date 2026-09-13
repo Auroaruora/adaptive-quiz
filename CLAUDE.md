@@ -173,6 +173,7 @@ frontend/
       Dashboard.tsx     # landing screen; placement panel is data-driven
       TopicCard.tsx
       PlacementPanel.tsx# the dark panel, shown until placed
+      WeakSpots.tsx     # concepts being got wrong; replaced the theta chart
       AbilitySparkline.tsx  # hand-rolled SVG, fixed -2..2 axis
     complete/
       TopicComplete.tsx # reached when the API reports complete: true

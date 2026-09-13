@@ -77,6 +77,11 @@ export const populatedProgress: Progress = {
         mastered: 4,
         total: 18,
       },
+      weakSpots: [
+        { slug: "chain-rule", name: "Chain rule", missed: 3 },
+        { slug: "product-rule", name: "Product rule", missed: 2 },
+        { slug: "power-rule", name: "Power rule", missed: 1 },
+      ],
       series: series(
         [-0.15, -0.31, -0.14, -0.3, -0.45, -0.28, -0.44, -0.58, -0.42],
         [0, 1, 3, 4, 6, 7],
@@ -93,6 +98,10 @@ export const populatedProgress: Progress = {
         mastered: 11,
         total: 18,
       },
+      weakSpots: [
+        { slug: "extraneous-root", name: "Extraneous root", missed: 2 },
+        { slug: "change-of-base", name: "Change of base", missed: 1 },
+      ],
       series: series(
         [
           0.15, 0.29, 0.13, 0.31, 0.48, 0.63, 0.5, 0.67, 0.82, 0.95, 1.06, 0.92,
@@ -112,6 +121,7 @@ export const populatedProgress: Progress = {
         mastered: 0,
         total: 18,
       },
+      weakSpots: [],
       series: [],
     },
   ],
@@ -130,6 +140,7 @@ export const emptyProgress: Progress = {
       correct: 0,
       mastered: 0,
     },
+    weakSpots: [],
     series: [],
   })),
 };
@@ -146,6 +157,7 @@ export const completedTopic: TopicProgress = {
     mastered: 18,
     total: 18,
   },
+  weakSpots: [],
   series: series(
     [
       0.15, 0.29, 0.13, 0.31, 0.48, 0.63, 0.5, 0.67, 0.82, 0.95, 1.06, 0.92,
