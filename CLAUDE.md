@@ -80,7 +80,10 @@ docker-compose.yml       # local MySQL service
   hooks/                # hook scripts
   commands/             # custom slash commands
     park.md             # /park — append a cleaned-up Parking Lot entry
+    commit.md           # /commit — split by logical change and commit
+    migrate.md          # /migrate — author, apply and verify one migration
 scripts/                # project scripts (journal-tail.sh, etc.)
+  migrate-check.sh      # round-trips a migration: up, down one, up again
 journal/                # daily logs — gitignored, never committed
 docs/
   data-model.md         # schema reference + version history (update with every migration)
