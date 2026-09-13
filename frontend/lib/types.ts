@@ -40,3 +40,30 @@ export interface Feedback {
 /** How one option should render once an answer has been submitted. */
 export type OptionState =
   "idle" | "selected" | "correct" | "incorrect" | "muted";
+
+export interface TopicSummary {
+  theta: number;
+  level: AbilityLevel;
+  answered: number;
+  correct: number;
+  mastered: number;
+  total: number;
+}
+
+export interface SeriesPoint {
+  at: string;
+  theta: number;
+  isCorrect: boolean;
+}
+
+export interface TopicProgress {
+  slug: string;
+  name: string;
+  summary: TopicSummary;
+  series: SeriesPoint[];
+}
+
+export interface Progress {
+  userId: number;
+  topics: TopicProgress[];
+}

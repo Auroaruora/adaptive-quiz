@@ -143,6 +143,8 @@ frontend/
     preview/
       feedback/page.tsx # dev-only side-by-side of both feedback states
       quiz/page.tsx     # dev-only clickable ask -> answer -> feedback loop
+      dashboard/page.tsx# dev-only; toggles between new and started accounts
+      complete/page.tsx # dev-only completion screen
   components/
     quiz/
       OptionButton.tsx  # one option; idle/selected/correct/incorrect/muted
@@ -154,6 +156,13 @@ frontend/
       AbilityGain.tsx   # renders only when ability rises; see design.md
       MasteryBar.tsx    # progress through a topic, counted in mastered
       QuizScreen.tsx    # asking and feedback as one screen
+    dashboard/
+      Dashboard.tsx     # landing screen; welcome panel is data-driven
+      TopicCard.tsx
+      WelcomePanel.tsx  # empty state, shown until anything is answered
+      AbilitySparkline.tsx  # hand-rolled SVG, fixed -2..2 axis
+    complete/
+      TopicComplete.tsx # reached when the API reports complete: true
   lib/
     types.ts            # TS mirrors of the API payloads
     fixtures.ts         # sample payloads for building screens without a backend
