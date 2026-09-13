@@ -46,8 +46,10 @@ is closer to a well-made study tool than to a game.
 a wrong answer is information, not a verdict, and the feedback screen exists
 to explain the misconception rather than to mark the student down.
 
-**On `deep`.** Reserved for dark surfaces. Until a screen actually needs one,
-do not use it — an unassigned dark color gets applied inconsistently.
+**On `deep`.** Now in active use. Every screen has exactly one dark panel
+carrying its most important thing — the placement call on the dashboard, the
+result on topic complete. One per screen, never two: the point is that it is
+the thing your eye lands on first.
 
 **Never** put `correct` or `incorrect` text directly on `surface`. Use the
 `-soft` fill with the matching `-ink` foreground.
@@ -139,7 +141,23 @@ requirement rather than an accessibility checkbox.
 
 ## Screens
 
-Four, and no more. Anything beyond these is scope without demonstrative value.
+### Shell
+
+Every screen sits inside one shell: brand mark, nav pills, and a `PROTOTYPE`
+tag. The active pill is a solid `ink` fill; the rest are plain text.
+
+### Eyebrows
+
+A mono, uppercase, letter-spaced label above a heading — `START HERE`,
+`ABILITY`, `PRODUCT RULE`, `WHAT HAPPENED HERE`, `UP NEXT`. They do the work
+of a subheading without adding another type size, and they are what makes the
+layout feel deliberate rather than stacked. Use `mono-xs`.
+
+### Progress bars are segmented
+
+One segment per question, not a continuous fill. A student can count what is
+left; a smooth bar only gives a vague proportion. Filled segments use
+`accent`, the current one `ink`, the remainder `line`.
 
 ### Dashboard
 Landing page. Three topic cards, each showing ability, mastered count out of
@@ -197,9 +215,26 @@ admin view. User identity is a name prompt on first visit, not a screen.
 
 ---
 
+## Ability as a score
+
+Ability is shown to students as **0–100**, not as a logit. Theta stays the
+model's unit and the API's; the mapping is presentation only:
+
+```
+score = round((clamp(theta, -4, 4) + 4) / 8 * 100)
+```
+
+So theta 0 reads as 50, and the clamp bounds map to 0 and 100. A student
+cannot act on "θ 1.18". The README must still explain that the underlying
+model is IRT, or the one audience that would recognise the work cannot see it.
+
+---
+
 ## Rules
 
-- Tokens only. A raw hex value or a pixel size in a component is a defect.
+- Tokens only. A raw hex value in a component is a defect. Layout dimensions
+  (container max-widths, chart geometry) are the exception — there are no
+  width tokens, and inventing them for one-off containers would be worse.
 - Do not reach for default Tailwind classes. They are overridden for color and
   font size; for spacing and radius, staying on the scale is a convention that
   has to be kept by hand.

@@ -145,7 +145,15 @@ frontend/
       quiz/page.tsx     # dev-only clickable ask -> answer -> feedback loop
       dashboard/page.tsx# dev-only; toggles between new and started accounts
       complete/page.tsx # dev-only completion screen
+      tokens/page.tsx   # the design system, rendered from live classes
+      layout.tsx        # wraps every preview screen in AppShell
   components/
+    shell/
+      AppShell.tsx      # brand, nav pills, PROTOTYPE tag
+    ui/
+      Eyebrow.tsx       # mono uppercase label above a heading
+      SegmentedBar.tsx  # countable progress, one segment per question
+      Panel.tsx         # surface or the one deep panel per screen
     quiz/
       OptionButton.tsx  # one option; idle/selected/correct/incorrect/muted
       OptionList.tsx    # decides each option's state after an answer
@@ -157,14 +165,15 @@ frontend/
       MasteryBar.tsx    # progress through a topic, counted in mastered
       QuizScreen.tsx    # asking and feedback as one screen
     dashboard/
-      Dashboard.tsx     # landing screen; welcome panel is data-driven
+      Dashboard.tsx     # landing screen; placement panel is data-driven
       TopicCard.tsx
-      WelcomePanel.tsx  # empty state, shown until anything is answered
+      PlacementPanel.tsx# the dark panel, shown until placed
       AbilitySparkline.tsx  # hand-rolled SVG, fixed -2..2 axis
     complete/
       TopicComplete.tsx # reached when the API reports complete: true
   lib/
     types.ts            # TS mirrors of the API payloads
+    ability.ts          # theta -> 0-100 score, presentation only
     fixtures.ts         # sample payloads for building screens without a backend
   postcss.config.mjs    # @tailwindcss/postcss
   eslint.config.mjs      # eslint-config-next + eslint-config-prettier

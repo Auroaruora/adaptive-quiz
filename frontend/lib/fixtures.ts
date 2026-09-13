@@ -84,7 +84,7 @@ export const populatedProgress: Progress = {
     },
     {
       slug: "logarithms",
-      name: "Logarithms & Exponentials",
+      name: "Logarithms",
       summary: {
         theta: 1.18,
         level: "proficient",
@@ -137,7 +137,7 @@ export const emptyProgress: Progress = {
 /** A finished topic, for the completion screen. */
 export const completedTopic: TopicProgress = {
   slug: "logarithms",
-  name: "Logarithms & Exponentials",
+  name: "Logarithms",
   summary: {
     theta: 1.43,
     level: "proficient",

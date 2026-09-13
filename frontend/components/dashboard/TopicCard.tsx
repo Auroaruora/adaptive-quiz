@@ -1,79 +1,82 @@
-import { AbilitySparkline } from "./AbilitySparkline";
+import { Eyebrow } from "@/components/ui/Eyebrow";
+import { SegmentedBar } from "@/components/ui/SegmentedBar";
+import { abilityScore } from "@/lib/ability";
 import type { TopicProgress } from "@/lib/types";
 
 interface TopicCardProps {
   topic: TopicProgress;
+  /** One-line description of what the topic covers. */
+  blurb: string;
   onStart: (slug: string) => void;
 }
 
 /**
  * One topic on the dashboard.
  *
- * The card keeps the same shape whether or not the topic has been started,
- * so the dashboard does not reflow as answers arrive — only the contents
- * change. An untouched topic shows the level word rather than a theta of
- * zero, which would read as a score of nothing rather than a starting
- * point.
+ * An unplaced topic shows the shape of the card it will become rather than
+ * zeros: a flat ability bar reading "no data yet" and an empty segmented
+ * row. Zeros would imply a score of nothing, which is not what not-started
+ * means.
  */
-export function TopicCard({ topic, onStart }: TopicCardProps) {
+export function TopicCard({ topic, blurb, onStart }: TopicCardProps) {
   const { summary } = topic;
-  const started = summary.answered > 0;
-  const percent =
-    summary.total === 0
-      ? 0
-      : Math.round((summary.mastered / summary.total) * 100);
+  const placed = summary.answered > 0;
+  const score = abilityScore(summary.theta);
 
   return (
-    <article className="border-line bg-surface shadow-raised flex flex-col gap-4 rounded-lg border p-6">
+    <article className="border-line bg-surface shadow-raised flex flex-col gap-6 rounded-lg border p-6">
       <header className="flex flex-col gap-1">
-        {/*
-          Two lines are reserved so every card's chart, bar and button line
-          up across the row, whether or not the name wraps. `lh` is the
-          line-height unit, so this tracks the type scale rather than
-          hard-coding a height that would drift if text-h3 changed.
-        */}
-        <h2 className="text-h3 text-ink min-h-[2lh]">{topic.name}</h2>
-        <p className="text-label text-ink-muted">
-          {started ? (
-            <>
-              <span className="text-ink capitalize">{summary.level}</span>
-              <span className="text-ink-faint font-mono text-mono-xs">
-                {" "}
-                θ {summary.theta.toFixed(2)}
-              </span>
-            </>
-          ) : (
-            "Not started"
+        <div className="flex items-start justify-between gap-3">
+          <h2 className="text-h3 text-ink min-h-[2lh]">{topic.name}</h2>
+          {!placed && (
+            <span className="border-line text-ink-faint text-mono-xs shrink-0 rounded-full border px-3 py-1 font-mono">
+              Not placed
+            </span>
           )}
-        </p>
+        </div>
+        <p className="text-body text-ink-muted">{blurb}</p>
       </header>
 
-      <AbilitySparkline
-        series={topic.series}
-        label={`Ability over ${summary.answered} answers in ${topic.name}`}
-      />
+      <div className="flex flex-col gap-3">
+        <Eyebrow tone="faint">Ability</Eyebrow>
+        {placed ? (
+          <div className="flex items-baseline gap-3">
+            <span className="text-h2 text-ink font-mono">{score}</span>
+            <span className="text-label text-ink-muted capitalize">
+              {summary.level}
+            </span>
+          </div>
+        ) : (
+          <div className="flex items-center gap-3">
+            <span className="bg-line h-1 w-8 rounded-full" />
+            <span className="text-body text-ink-faint">no data yet</span>
+          </div>
+        )}
+      </div>
 
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-3">
         <div className="flex items-baseline justify-between gap-3">
-          <span className="text-label text-ink-muted">Mastered</span>
-          <span className="text-ink font-mono text-mono-xs">
-            {summary.mastered} / {summary.total}
+          <span className="text-body text-ink">Skills mastered</span>
+          <span className="font-mono text-mono-xs">
+            <span className="text-ink">{summary.mastered}</span>
+            <span className="text-ink-faint">/{summary.total}</span>
           </span>
         </div>
-        <div className="bg-line h-2 w-full overflow-hidden rounded-full">
-          <div
-            className="bg-accent h-full rounded-full"
-            style={{ width: `${percent}%` }}
-          />
-        </div>
+        <SegmentedBar
+          total={summary.total}
+          filled={summary.mastered}
+          label={`${summary.mastered} of ${summary.total} skills mastered in ${topic.name}`}
+        />
       </div>
 
       <button
         type="button"
         onClick={() => onStart(topic.slug)}
-        className="border-line text-ink hover:border-accent hover:text-accent active:bg-accent-soft text-body mt-2 cursor-pointer rounded-sm border px-6 py-3 font-medium transition-colors"
+        className="border-line text-ink hover:border-accent hover:text-accent active:bg-accent-soft text-body mt-auto w-full cursor-pointer rounded-sm border px-6 py-3 font-medium transition-colors"
       >
-        {started ? "Continue" : "Start"}
+        {placed
+          ? `Continue ${topic.name.split(" ")[0]}`
+          : `Place me in ${topic.slug}`}
       </button>
     </article>
   );

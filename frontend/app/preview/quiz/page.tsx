@@ -9,9 +9,8 @@ import type { Feedback } from "@/lib/types";
 /**
  * The quiz screen, clickable, running on fixtures.
  *
- * Development only. Grading is faked against the fixture's correct option
- * so the ask-answer-feedback loop can be walked through before any of it
- * is wired to the API.
+ * Grading is faked against the fixture's correct option so the
+ * ask-answer-feedback loop can be walked through before it is wired up.
  */
 export default function QuizPreview() {
   const [chosenOptionId, setChosenOptionId] = useState<number | null>(null);
@@ -31,26 +30,16 @@ export default function QuizPreview() {
   }
 
   return (
-    <main className="flex flex-col gap-8 p-8">
-      <header className="mx-auto w-full max-w-[720px]">
-        <p className="text-label text-ink-faint font-mono">PREVIEW</p>
-        <h1 className="text-h2 text-ink">Quiz screen</h1>
-        <p className="text-body text-ink-muted mt-2">
-          Pick an option and check it. Option B is the correct answer.
-        </p>
-      </header>
-
-      <QuizScreen
-        topicName="Logarithms &amp; Exponentials"
-        question={question}
-        mastered={mastered}
-        total={18}
-        feedback={feedback}
-        chosenOptionId={chosenOptionId}
-        onSelect={setChosenOptionId}
-        onSubmit={submit}
-        onNext={next}
-      />
-    </main>
+    <QuizScreen
+      topicName="Logarithms"
+      question={question}
+      mastered={mastered}
+      total={18}
+      feedback={feedback}
+      chosenOptionId={chosenOptionId}
+      onSelect={setChosenOptionId}
+      onSubmit={submit}
+      onNext={next}
+    />
   );
 }
