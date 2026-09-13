@@ -1,6 +1,6 @@
 # API Contract
 
-Four endpoints plus a health check. Field-by-field schemas are generated
+Five endpoints plus a health check. Field-by-field schemas are generated
 from the code and served at `/docs`; this covers the rules behind them,
 which OpenAPI cannot express.
 
@@ -31,6 +31,20 @@ leak under a different name.
 ---
 
 ## Endpoints
+
+### `GET /topics`
+
+Lists the topics a student can be quizzed on. Without this there is no way
+for a client to discover the `topicId` that `/next-question` requires.
+
+```
+← [ { "id": 100, "slug": "logarithms",
+      "name": "Logarithms & Exponentials",
+      "description": "...", "questionCount": 18 } ]
+```
+
+`questionCount` counts active questions only, so a retired one stops being
+advertised.
 
 ### `POST /users`
 

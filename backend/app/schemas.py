@@ -40,6 +40,16 @@ class UserOut(_Wire):
     created_at: datetime.datetime
 
 
+class TopicOut(_Wire):
+    """A topic a student can be quizzed on."""
+
+    id: int
+    slug: str
+    name: str
+    description: str | None
+    question_count: int
+
+
 class OptionOut(_Wire):
     """One answer choice, as shown before answering."""
 

@@ -78,6 +78,7 @@ docker-compose.yml       # local MySQL service
   settings.json         # hook config (committed)
   settings.local.json   # machine-specific overrides (gitignored)
   hooks/                # hook scripts
+  launch.json           # dev server config for the preview pane
   commands/             # custom slash commands
     park.md             # /park — append a cleaned-up Parking Lot entry
     commit.md           # /commit — split by logical change and commit
@@ -102,6 +103,7 @@ backend/
     routers/
       __init__.py
       users.py          # POST /users
+      topics.py         # GET /topics — how a client discovers topic ids
       quiz.py           # GET /next-question, POST /submit-answer
       progress.py       # GET /progress/{userId}
     db/

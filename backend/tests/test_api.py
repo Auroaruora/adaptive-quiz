@@ -6,7 +6,7 @@ is submitted, and that rule is only worth anything if something checks it.
 """
 
 import pytest
-from sqlalchemy import select
+from sqlalchemy import select, update
 
 from app.db.models import Attempt, Question, QuestionOption
 
@@ -61,6 +61,44 @@ class TestCreateUser:
     async def test_rejects_a_name_over_the_column_limit(self, client):
         response = await client.post("/users", json={"displayName": "x" * 51})
         assert response.status_code == 422
+
+
+class TestListTopics:
+    """GET /topics."""
+
+    async def test_lists_every_seeded_topic(self, client):
+        response = await client.get("/topics")
+        assert response.status_code == 200
+        body = response.json()
+        assert {t["slug"] for t in body} == {
+            "derivatives",
+            "logarithms",
+            "trigonometry",
+        }
+
+    async def test_reports_a_usable_topic_id(self, client, topic_id):
+        """The id this returns must be the one /next-question accepts."""
+        body = (await client.get("/topics")).json()
+        logs = next(t for t in body if t["slug"] == "logarithms")
+        assert logs["id"] == topic_id
+
+    async def test_counts_active_questions(self, client):
+        body = (await client.get("/topics")).json()
+        assert all(t["questionCount"] == 18 for t in body)
+
+    async def test_excludes_retired_questions_from_the_count(
+        self, client, session, topic_id
+    ):
+        await session.execute(
+            update(Question)
+            .where(Question.topic_id == topic_id)
+            .values(is_active=False)
+        )
+        await session.flush()
+
+        body = (await client.get("/topics")).json()
+        logs = next(t for t in body if t["slug"] == "logarithms")
+        assert logs["questionCount"] == 0
 
 
 class TestNextQuestion:

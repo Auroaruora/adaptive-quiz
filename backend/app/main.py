@@ -2,7 +2,7 @@
 
 from fastapi import FastAPI
 
-from app.routers import progress, quiz, users
+from app.routers import progress, quiz, topics, users
 
 app = FastAPI(
     title="Adaptive Quiz",
@@ -13,6 +13,7 @@ app = FastAPI(
 )
 
 app.include_router(users.router)
+app.include_router(topics.router)
 app.include_router(quiz.router)
 app.include_router(progress.router)
 
