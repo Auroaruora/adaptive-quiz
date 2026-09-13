@@ -68,12 +68,12 @@ simplification vs. full 2PL/3PL IRT) in the Phase 7 README.
 **This section is the living record of the repo's file tree. Update it every
 time a file or directory is created, moved, renamed, or deleted.**
 
-Nothing is created yet. Planned so far (application structure decided in
-Phase 0):
-
 ```
 CLAUDE.md
-.gitignore              # must include journal/
+.gitignore              # journal/, .env, venv/, node_modules/, etc.
+.env                     # local DB credentials (gitignored)
+.env.example             # committed placeholders for .env
+docker-compose.yml       # local MySQL service
 .claude/
   settings.json         # hook config (committed)
   settings.local.json   # machine-specific overrides (gitignored)
@@ -82,6 +82,19 @@ CLAUDE.md
     park.md             # /park — append a cleaned-up Parking Lot entry
 scripts/                # project scripts (journal-tail.sh, etc.)
 journal/                # daily logs — gitignored, never committed
+backend/
+  app/
+    main.py             # FastAPI app, hello-world endpoint
+  requirements.txt
+  ruff.toml             # ruff config (Google style, line-length 80)
+frontend/
+  app/
+    page.tsx            # Next.js hello-world page
+    layout.tsx
+  eslint.config.mjs      # eslint-config-next + eslint-config-prettier
+  .prettierrc.json
+  package.json
+  tsconfig.json
 ```
 
 ---
@@ -194,11 +207,12 @@ Each phase ends with something runnable/testable before moving to the next.
 **Do not skip ahead — confirm each phase works before starting the next.**
 
 ### Phase 0 — Project scaffolding
-- [ ] Decide and create repo structure (record it in the Repo Structure section above)
-- [ ] MySQL running locally (Docker recommended)
-- [ ] FastAPI "hello world" endpoint running
-- [ ] Next.js "hello world" page running
-- [ ] `.env` setup for DB credentials (never committed)
+- [x] Decide and create repo structure (record it in the Repo Structure section above)
+- [x] Install required formatters/linters: ruff, Prettier + ESLint, shellcheck
+- [x] MySQL running locally (Docker recommended)
+- [x] FastAPI "hello world" endpoint running
+- [x] Next.js "hello world" page running
+- [x] `.env` setup for DB credentials (never committed)
 
 ### Phase 1 — Database + seed data
 - [ ] Design and run schema migrations

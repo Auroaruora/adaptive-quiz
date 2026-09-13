@@ -1,0 +1,8 @@
+line-length = 80
+
+[lint]
+select = ["E", "F", "I", "D"]
+ignore = ["D203", "D213"]
+
+[lint.pydocstyle]
+convention = "google"
