@@ -6,3 +6,4 @@ aiomysql
 pymysql
 cryptography
 python-dotenv
+pyyaml
