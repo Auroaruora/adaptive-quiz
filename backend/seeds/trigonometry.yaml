@@ -22,6 +22,7 @@ questions:
 
   - stem: "sin(pi/6) = ?"
     difficulty: easy
+    tags: [unit-circle, special-angle, sine]
     solution:
       - "pi/6 radians is 30 degrees."
       - "In a 30-60-90 triangle, the side opposite the 30 degree angle is
@@ -43,6 +44,7 @@ questions:
 
   - stem: "cos(0) = ?"
     difficulty: easy
+    tags: [unit-circle, special-angle, cosine]
     solution:
       - "On the unit circle, the point at angle 0 is (1, 0)."
       - "Cosine is the x-coordinate of that point."
@@ -64,6 +66,7 @@ questions:
 
   - stem: "tan(pi/4) = ?"
     difficulty: easy
+    tags: [unit-circle, special-angle, tangent]
     solution:
       - "tan(x) = sin(x) / cos(x)."
       - "At pi/4, sine and cosine are both sqrt(2)/2."
@@ -85,6 +88,7 @@ questions:
 
   - stem: "Simplify:  sin^2(x) + cos^2(x)"
     difficulty: easy
+    tags: [pythagorean-identity, simplify-identity]
     solution:
       - "This is the Pythagorean identity."
       - "For every angle x, sin^2(x) + cos^2(x) = 1."
@@ -105,6 +109,7 @@ questions:
 
   - stem: "Convert 180 degrees to radians."
     difficulty: easy
+    tags: [radians, unit-circle]
     solution:
       - "A full circle is 360 degrees, or 2*pi radians."
       - "180 degrees is half a circle."
@@ -126,6 +131,7 @@ questions:
 
   - stem: "In a right triangle, which ratio defines cos(x)?"
     difficulty: easy
+    tags: [right-triangle, cosine]
     solution:
       - "SOH-CAH-TOA gives the three basic ratios."
       - "CAH: cosine is adjacent over hypotenuse."
@@ -149,6 +155,7 @@ questions:
 
   - stem: "sin(2*pi/3) = ?"
     difficulty: medium
+    tags: [unit-circle, reference-angle, quadrant-sign, sine]
     solution:
       - "2*pi/3 is 120 degrees, which lies in the second quadrant."
       - "Sine is positive in the second quadrant."
@@ -173,6 +180,7 @@ questions:
   - stem: >-
       If sin(x) = 3/5 and x is in the first quadrant, find cos(x).
     difficulty: medium
+    tags: [pythagorean-identity, quadrant-sign, sine, cosine]
     solution:
       - "Use sin^2(x) + cos^2(x) = 1."
       - "cos^2(x) = 1 - (3/5)^2 = 1 - 9/25 = 16/25."
@@ -196,6 +204,7 @@ questions:
 
   - stem: "Simplify:  (1 - cos^2(x)) / sin(x)"
     difficulty: medium
+    tags: [pythagorean-identity, simplify-identity, sine]
     solution:
       - "From the Pythagorean identity, 1 - cos^2(x) = sin^2(x)."
       - "So the expression becomes sin^2(x) / sin(x)."
@@ -218,6 +227,7 @@ questions:
 
   - stem: "Solve for x in [0, 2pi):  2cos(x) = 1"
     difficulty: medium
+    tags: [trig-equation, unit-circle, special-angle, cosine]
     solution:
       - "Divide both sides by 2: cos(x) = 1/2."
       - "Cosine equals 1/2 at the reference angle pi/3."
@@ -241,6 +251,7 @@ questions:
 
   - stem: "The period of y = sin(3x) is:"
     difficulty: medium
+    tags: [period, graph-transformation, sine]
     solution:
       - "For y = sin(bx), the period is 2*pi / b."
       - "Here b = 3."
@@ -264,6 +275,7 @@ questions:
   - stem: >-
       Given cos(x) = -4/5 and x is in the second quadrant, find tan(x).
     difficulty: medium
+    tags: [pythagorean-identity, quadrant-sign, tangent, cosine]
     solution:
       - "From the identity, sin^2(x) = 1 - 16/25 = 9/25."
       - "In the second quadrant sine is positive, so sin(x) = 3/5."
@@ -289,6 +301,7 @@ questions:
 
   - stem: "Solve for x in [0, 2pi):  2sin^2(x) - sin(x) - 1 = 0"
     difficulty: hard
+    tags: [trig-equation, quadratic-substitution, unit-circle, sine]
     solution:
       - "Substitute u = sin(x): 2u^2 - u - 1 = 0."
       - "Factor: (2u + 1)(u - 1) = 0, so u = -1/2 or u = 1."
@@ -316,6 +329,7 @@ questions:
       Using sin(2x) = 2sin(x)cos(x), find sin(2x) when sin(x) = 3/5 and x
       is in the first quadrant.
     difficulty: hard
+    tags: [double-angle, pythagorean-identity, sine, cosine]
     solution:
       - "In the first quadrant, cos(x) = 4/5 by the Pythagorean identity."
       - "sin(2x) = 2 sin(x) cos(x)."
@@ -338,6 +352,7 @@ questions:
 
   - stem: "Simplify:  (1 + tan^2(x)) * cos^2(x)"
     difficulty: hard
+    tags: [pythagorean-identity, reciprocal-identity, simplify-identity, tangent]
     solution:
       - "Use the identity 1 + tan^2(x) = sec^2(x)."
       - "sec^2(x) = 1 / cos^2(x)."
@@ -361,6 +376,7 @@ questions:
 
   - stem: "Solve for x in [0, 2pi):  sin(2x) = sin(x)"
     difficulty: hard
+    tags: [trig-equation, double-angle, factoring, sine]
     solution:
       - "Rewrite with the double angle: 2 sin(x) cos(x) = sin(x)."
       - "Move everything to one side: 2 sin(x) cos(x) - sin(x) = 0."
@@ -388,6 +404,7 @@ questions:
       For y = 2sin(x - pi/4) + 3, give the amplitude, phase shift and
       vertical shift.
     difficulty: hard
+    tags: [graph-transformation, amplitude-shift, sine]
     solution:
       - "Compare with the general form y = A sin(x - C) + D."
       - "A = 2, so the amplitude is 2."
@@ -410,6 +427,7 @@ questions:
 
   - stem: "Find the exact value of cos(pi/12)."
     difficulty: hard
+    tags: [angle-difference, special-angle, cosine, unit-circle]
     solution:
       - "Write pi/12 as a difference of known angles: pi/4 - pi/6."
       - "Use cos(A - B) = cos(A)cos(B) + sin(A)sin(B)."

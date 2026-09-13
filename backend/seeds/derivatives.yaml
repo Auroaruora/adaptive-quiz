@@ -22,6 +22,7 @@ questions:
 
   - stem: "d/dx of x^4"
     difficulty: easy
+    tags: [power-rule, polynomial]
     solution:
       - "The power rule: d/dx of x^n is n*x^(n-1)."
       - "Here n = 4."
@@ -43,6 +44,7 @@ questions:
 
   - stem: "d/dx of 7"
     difficulty: easy
+    tags: [constant-rule, power-rule, polynomial]
     solution:
       - "7 is a constant, so its graph is a horizontal line."
       - "A horizontal line has slope 0."
@@ -62,6 +64,7 @@ questions:
 
   - stem: "d/dx of 3x"
     difficulty: easy
+    tags: [power-rule, constant-multiple, linear, polynomial]
     solution:
       - "The derivative of x is 1."
       - "A constant multiple carries straight through: d/dx of 3x = 3 * 1."
@@ -82,6 +85,7 @@ questions:
 
   - stem: "d/dx of sin(x)"
     difficulty: easy
+    tags: [standard-derivative, trigonometric]
     solution:
       - "The derivative of sin(x) is cos(x)."
       - "This is one of the standard results worth memorising."
@@ -103,6 +107,7 @@ questions:
 
   - stem: "d/dx of e^x"
     difficulty: easy
+    tags: [standard-derivative, exponential]
     solution:
       - "e^x is its own derivative."
       - "That property is exactly what makes e the natural base."
@@ -123,6 +128,7 @@ questions:
 
   - stem: "d/dx of (x^3 + 2x)"
     difficulty: easy
+    tags: [power-rule, sum-rule, polynomial]
     solution:
       - "Differentiate term by term."
       - "d/dx of x^3 = 3x^2."
@@ -146,6 +152,7 @@ questions:
 
   - stem: "d/dx of (3x^2 + 5)^4"
     difficulty: medium
+    tags: [chain-rule, power-rule, polynomial]
     solution:
       - "Use the chain rule: differentiate the outside, then multiply by
          the derivative of the inside."
@@ -169,6 +176,7 @@ questions:
 
   - stem: "d/dx of x^2 * sin(x)"
     difficulty: medium
+    tags: [product-rule, power-rule, trigonometric]
     solution:
       - "Use the product rule: (fg)' = f'g + fg'."
       - "f = x^2, so f' = 2x."
@@ -191,6 +199,7 @@ questions:
 
   - stem: "d/dx of ln(x)"
     difficulty: medium
+    tags: [standard-derivative, logarithmic]
     solution:
       - "The derivative of ln(x) is 1/x."
       - "It holds for x > 0, where ln(x) is defined."
@@ -211,6 +220,7 @@ questions:
 
   - stem: "d/dx of x / (x + 1)"
     difficulty: medium
+    tags: [quotient-rule, polynomial]
     solution:
       - "Quotient rule: (f/g)' = (f'g - fg') / g^2."
       - "f = x with f' = 1; g = x + 1 with g' = 1."
@@ -231,6 +241,7 @@ questions:
 
   - stem: "Find the slope of y = x^2 at x = 3."
     difficulty: medium
+    tags: [power-rule, evaluate-derivative, application, polynomial]
     solution:
       - "The derivative gives the slope: dy/dx = 2x."
       - "Substitute x = 3."
@@ -252,6 +263,7 @@ questions:
 
   - stem: "d/dx of cos(3x)"
     difficulty: medium
+    tags: [chain-rule, trigonometric]
     solution:
       - "The derivative of cos(u) is -sin(u)."
       - "Chain rule: multiply by the derivative of the inside, which is 3."
@@ -275,6 +287,7 @@ questions:
 
   - stem: "d/dx of (x^2 * ln(x)) / (x + 1)"
     difficulty: hard
+    tags: [quotient-rule, product-rule, logarithmic, polynomial]
     solution:
       - "Use the quotient rule with f = x^2*ln(x) and g = x + 1."
       - "f needs the product rule: f' = 2x*ln(x) + x^2*(1/x)."
@@ -300,6 +313,7 @@ questions:
 
   - stem: "Given x^2 + y^2 = 25, find dy/dx by implicit differentiation."
     difficulty: hard
+    tags: [implicit-differentiation, chain-rule, polynomial]
     solution:
       - "Differentiate both sides with respect to x."
       - "d/dx of x^2 = 2x."
@@ -324,6 +338,7 @@ questions:
 
   - stem: "Find the critical points of f(x) = x^3 - 3x."
     difficulty: hard
+    tags: [power-rule, polynomial, application, solve-equation]
     solution:
       - "Critical points occur where the derivative is zero."
       - "f'(x) = 3x^2 - 3."
@@ -346,6 +361,7 @@ questions:
 
   - stem: "d/dx of x^x"
     difficulty: hard
+    tags: [logarithmic-differentiation, exponential, logarithmic]
     solution:
       - "Neither the power rule nor the exponential rule applies, since x
          is both the base and the exponent."
@@ -370,6 +386,7 @@ questions:
 
   - stem: "Find the equation of the tangent line to y = x^2 at x = 2."
     difficulty: hard
+    tags: [power-rule, evaluate-derivative, application, linear, polynomial]
     solution:
       - "The point of tangency is (2, 4), since 2^2 = 4."
       - "The slope is y' = 2x, which equals 4 at x = 2."
@@ -391,6 +408,7 @@ questions:
 
   - stem: "d/dx of e^(2x) * cos(x)"
     difficulty: hard
+    tags: [product-rule, chain-rule, trigonometric, exponential]
     solution:
       - "Product rule with f = e^(2x) and g = cos(x)."
       - "f' = 2e^(2x), by the chain rule."

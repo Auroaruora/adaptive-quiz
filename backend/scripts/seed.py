@@ -13,6 +13,7 @@ import argparse
 import hashlib
 import pathlib
 import random
+import re
 import sys
 
 import yaml
@@ -29,8 +30,15 @@ from app.db.models import (  # noqa: E402
     Question,
     QuestionOption,
     QuestionStep,
+    QuestionTag,
+    Tag,
     Topic,
 )
+
+#: Tags must be lowercase, hyphen-separated slugs. Enforced so a typo
+#: becomes a new tag silently shared with nothing, which is exactly the
+#: isolation the tag system exists to avoid.
+_TAG_PATTERN = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*")
 
 _SEEDS_DIR = pathlib.Path(__file__).resolve().parents[1] / "seeds"
 
@@ -76,6 +84,17 @@ def _validate(path: pathlib.Path, data: dict) -> list[str]:
         label = q.get("difficulty")
         if label not in {m.value for m in DifficultyLabel}:
             problems.append(f"{at}: bad difficulty {label!r}")
+
+        tags = q.get("tags") or []
+        # Two minimum: a question whose only tag is unique is as isolated
+        # as one with no tags, which defeats the point.
+        if len(tags) < 2:
+            problems.append(f"{at}: needs at least 2 tags, has {len(tags)}")
+        if len(set(tags)) != len(tags):
+            problems.append(f"{at}: duplicate tag")
+        for tag in tags:
+            if not isinstance(tag, str) or not _TAG_PATTERN.fullmatch(tag):
+                problems.append(f"{at}: bad tag {tag!r}")
 
         steps = q.get("solution") or []
         if len(steps) < 2:
@@ -140,12 +159,38 @@ def _ordered_options(stem: str, options: list[dict]) -> list[dict]:
     return shuffled
 
 
-def _load_file(session: Session, path: pathlib.Path) -> tuple[int, int]:
+def _tag(session: Session, slug: str, cache: dict[str, Tag]) -> Tag:
+    """Fetches a tag by slug, creating it on first use.
+
+    Args:
+        session: Open session; the caller owns the transaction.
+        slug: Tag slug from a seed file.
+        cache: Tags already seen this run, to avoid a query per question.
+
+    Returns:
+        The tag row.
+    """
+    if slug in cache:
+        return cache[slug]
+    tag = session.scalar(select(Tag).where(Tag.slug == slug))
+    if tag is None:
+        tag = Tag(slug=slug, name=slug.replace("-", " ").capitalize())
+        session.add(tag)
+        session.flush()
+    cache[slug] = tag
+    return tag
+
+
+def _load_file(
+    session: Session, path: pathlib.Path, tag_cache: dict[str, Tag]
+) -> tuple[int, int]:
     """Loads one seed file, skipping questions already present.
 
     Args:
         session: Open session; the caller owns the transaction.
         path: Seed file to load.
+        tag_cache: Tags already created this run, shared across files so
+            a tag used in two topics is created once.
 
     Returns:
         Counts of questions inserted and skipped.
@@ -200,6 +245,14 @@ def _load_file(session: Session, path: pathlib.Path) -> tuple[int, int]:
                         if option.get("correct")
                         else " ".join(option["misconception"].split())
                     ),
+                )
+            )
+
+        for slug in q["tags"]:
+            session.add(
+                QuestionTag(
+                    question_id=question.id,
+                    tag_id=_tag(session, slug, tag_cache).id,
                 )
             )
 
@@ -272,8 +325,9 @@ def main() -> None:
     with Session(engine) as session, session.begin():
         if args.reset:
             print(f"reset: deleted {_reset(session)} question(s)")
+        tag_cache: dict[str, Tag] = {}
         for path in paths:
-            inserted, skipped = _load_file(session, path)
+            inserted, skipped = _load_file(session, path, tag_cache)
             print(f"{path.name}: {inserted} inserted, {skipped} skipped")
 
     _report(engine)
