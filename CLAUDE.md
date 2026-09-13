@@ -88,6 +88,7 @@ journal/                # daily logs — gitignored, never committed
 docs/
   data-model.md         # schema reference + version history (update with every migration)
   irt-model.md          # the Rasch model, learning rates, and their trade-offs
+  api.md                # endpoint contract, secrecy rule, selection tiers
 backend/
   alembic.ini           # alembic config; DB URL deliberately absent (env.py builds it)
   app/
@@ -95,6 +96,14 @@ backend/
     main.py             # FastAPI app, hello-world endpoint
     config.py           # env-driven settings, builds the DB URL per driver
     irt.py              # Rasch probability + update; pure, no DB imports
+    selection.py        # three-tier next-question choice, randomesque
+    schemas.py          # pydantic request/response shapes (camelCase wire)
+    services.py         # shared DB reads/writes, keeps routers thin
+    routers/
+      __init__.py
+      users.py          # POST /users
+      quiz.py           # GET /next-question, POST /submit-answer
+      progress.py       # GET /progress/{userId}
     db/
       __init__.py
       models.py         # SQLAlchemy models — the schema source of truth
@@ -108,13 +117,16 @@ backend/
   scripts/
     seed.py             # loads seeds/*.yaml; deterministic option shuffle
   tests/
+    conftest.py         # rollback-per-test fixtures against real MySQL
     test_irt.py         # behaviour of the Rasch update rule
+    test_api.py         # endpoint behaviour, including the secrecy rule
   seeds/                # hand-authored question content, one file per topic
     logarithms.yaml
     trigonometry.yaml
     derivatives.yaml
   requirements.txt
-  requirements-dev.txt  # requirements.txt plus pytest
+  requirements-dev.txt  # requirements.txt plus pytest, pytest-asyncio, httpx
+  pytest.ini            # asyncio auto mode
   ruff.toml             # ruff config (Google style, line-length 80)
 frontend/
   app/
@@ -270,11 +282,15 @@ Each phase ends with something runnable/testable before moving to the next.
 - [x] Document reasoning in `docs/irt-model.md`, to fold into the Phase 7 README
 
 ### Phase 3 — Backend API
-- [ ] `POST /users` — create a user
-- [ ] `GET /next-question?userId=&topicId=` — question matched to current rating
-- [ ] `POST /submit-answer` — grades answer, updates both ratings, returns next question
-- [ ] `GET /progress/:userId` — rating history per topic (for a chart later)
-- [ ] Basic input validation + error handling
+- [x] Decide selection: randomesque over the 5 nearest by |b - theta|, with
+      three tiers — unseen, then last-answered-wrong, then topic complete
+- [x] Decide shapes: camelCase wire, theta exposed as a number and a band,
+      progress returns summary plus full series — recorded in `docs/api.md`
+- [x] `POST /users` — create a user
+- [x] `GET /next-question?userId=&topicId=` — question matched to current rating
+- [x] `POST /submit-answer` — grades answer, updates both ratings, returns next question
+- [x] `GET /progress/:userId` — rating history per topic (for a chart later)
+- [x] Basic input validation + error handling
 
 ### Phase 4 — Frontend
 - [ ] Quiz-taking flow (question → answer → feedback → next question)
