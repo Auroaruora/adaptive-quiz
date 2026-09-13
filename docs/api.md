@@ -117,12 +117,32 @@ from the closest five. That is "randomesque" exposure control: it keeps
 information near maximum while stopping one question being served to
 everyone.
 
-Three tiers, in order:
+Two tiers, in order:
 
-1. Questions never attempted.
-2. Questions whose **most recent** attempt was wrong. Answering one
-   correctly retires it from this tier.
+1. **Questions never attempted**, ranked by closeness to theta as above.
+2. **Questions whose most recent attempt was wrong.** Answering one
+   correctly retires it from this tier. Here the rule changes: what a
+   student keeps getting wrong matters more than what is well matched, so
+   ranking is by *mistake urgency* rather than by difficulty.
 3. Neither left → `complete: true`.
+
+### Time in the second tier
+
+Two things about *when* shape what comes back.
+
+**Mistakes decay.** A mistake counts fully on the day it happens and halves
+every fourteen days. Five misses in January should not pull practice as hard
+as one miss yesterday, or an early struggle skews the mix forever. Selection
+is weighted by that decayed urgency rather than ranked by it: with three
+questions left, ranking-then-picking-evenly would discard the decay exactly
+when it matters, while weighting keeps recent mistakes dominant and still
+lets an old one resurface for review.
+
+**Questions are spaced.** A question answered within the last five attempts
+is held back. Answering correctly moments after reading the solution shows
+you can remember a sentence, not that you learned anything. If spacing would
+empty the pool it is ignored — a student with two questions left should still
+get one.
 
 So a topic is complete when every active question has been answered
 correctly at least once, which is close to how IXL treats a mastered

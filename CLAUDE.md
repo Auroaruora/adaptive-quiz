@@ -98,7 +98,8 @@ backend/
     main.py             # FastAPI app, hello-world endpoint
     config.py           # env-driven settings, builds the DB URL per driver
     irt.py              # Rasch probability + update; pure, no DB imports
-    selection.py        # three-tier next-question choice, randomesque
+    selection.py        # next-question choice: unseen, then what you got wrong
+    practice.py         # mistake decay and spacing; pure, no DB or clock
     schemas.py          # pydantic request/response shapes (camelCase wire)
     services.py         # shared DB reads/writes, keeps routers thin
     routers/
@@ -122,7 +123,8 @@ backend/
   tests/
     conftest.py         # rollback-per-test fixtures against real MySQL
     test_irt.py         # behaviour of the Rasch update rule
-    test_selection.py   # the three selection tiers and the pool ranking
+    test_selection.py   # selection tiers, pool ranking, spacing and decay
+    test_practice.py    # decay and urgency, aged without touching the clock
     test_api.py         # endpoint behaviour, including the secrecy rule
     test_config.py      # URL building and fail-fast on missing credentials
   seeds/                # hand-authored question content, one file per topic
