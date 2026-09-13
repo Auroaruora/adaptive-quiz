@@ -215,18 +215,33 @@ admin view. User identity is a name prompt on first visit, not a screen.
 
 ---
 
-## Ability as a score
+## Ability is accuracy
 
-Ability is shown to students as **0–100**, not as a logit. Theta stays the
-model's unit and the API's; the mapping is presentation only:
+Ability is shown as **the share of questions answered correctly** in a topic,
+not as a logit and not as a mapping of one.
 
 ```
-score = round((clamp(theta, -4, 4) + 4) / 8 * 100)
+accuracy = round(correct / answered * 100)      // null when answered = 0
 ```
 
-So theta 0 reads as 50, and the clamp bounds map to 0 and 100. A student
-cannot act on "θ 1.18". The README must still explain that the underlying
-model is IRT, or the one audience that would recognise the work cannot see it.
+| Accuracy | Level |
+| --- | --- |
+| < 50% | developing |
+| 50–69% | progressing |
+| 70–89% | proficient |
+| ≥ 90% | advanced |
+
+A student can act on "you get two in three right". Theta describes how the
+app *picks* questions, not how well someone is doing, so showing it — or a
+rescaling of it — put the engine's internals on screen and called them a
+score.
+
+Theta has not gone away. It still breaks ties in selection and is still
+stored on every attempt. It simply never reaches the interface, and the
+Phase 7 README carries the IRT story instead.
+
+**Never show 0% for an untouched topic.** No attempts means no accuracy, not
+an accuracy of nothing.
 
 ---
 

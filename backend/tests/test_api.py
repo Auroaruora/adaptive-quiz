@@ -6,7 +6,7 @@ is submitted, and that rule is only worth anything if something checks it.
 """
 
 import pytest
-from sqlalchemy import select, update
+from sqlalchemy import func, select, update
 
 from app.db.models import Attempt, Question, QuestionOption, QuestionTag, Tag
 
@@ -530,3 +530,54 @@ class TestWeakSpots:
         body = (await client.get(f"/progress/{user_id}")).json()
         logs = next(t for t in body["topics"] if t["slug"] == "logarithms")
         assert max(w["missed"] for w in logs["weakSpots"]) > 1
+
+
+class TestQuestionTags:
+    """Tags on a served question, which make the steering visible."""
+
+    async def test_a_served_question_names_its_concepts(
+        self, client, user_id, topic_id
+    ):
+        body = (
+            await client.get(
+                f"/next-question?userId={user_id}&topicId={topic_id}"
+            )
+        ).json()
+        tags = body["question"]["tags"]
+        assert len(tags) >= 2
+        assert all(t["slug"] and t["name"] for t in tags)
+
+    async def test_tags_are_ordered_most_specific_first(
+        self, client, user_id, topic_id, session
+    ):
+        """A client showing one tag should show the rarest."""
+        body = (
+            await client.get(
+                f"/next-question?userId={user_id}&topicId={topic_id}"
+            )
+        ).json()
+        slugs = [t["slug"] for t in body["question"]["tags"]]
+
+        counts = {}
+        for slug in slugs:
+            counts[slug] = await session.scalar(
+                select(func.count())
+                .select_from(QuestionTag)
+                .join(Tag, Tag.id == QuestionTag.tag_id)
+                .join(Question, Question.id == QuestionTag.question_id)
+                .where(Tag.slug == slug, Question.topic_id == topic_id)
+            )
+        ordered = [counts[s] for s in slugs]
+        assert ordered == sorted(ordered)
+
+    async def test_tags_do_not_reveal_the_answer(
+        self, client, user_id, topic_id
+    ):
+        """Tags name a method, never an outcome."""
+        raw = (
+            await client.get(
+                f"/next-question?userId={user_id}&topicId={topic_id}"
+            )
+        ).text.lower()
+        for forbidden in ("iscorrect", "misconception", "solution"):
+            assert forbidden not in raw

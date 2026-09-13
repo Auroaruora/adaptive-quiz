@@ -50,6 +50,13 @@ class TopicOut(_Wire):
     question_count: int
 
 
+class TagOut(_Wire):
+    """A concept a question exercises."""
+
+    slug: str
+    name: str
+
+
 class OptionOut(_Wire):
     """One answer choice, as shown before answering."""
 
@@ -63,11 +70,16 @@ class QuestionOut(_Wire):
 
     Deliberately omits which option is correct, every misconception, the
     worked solution, and difficulty_b.
+
+    `tags` are ordered rarest first, so a client showing only one shows
+    the most specific: "quotient rule" tells a student more than
+    "polynomial", which is true of nearly every question in the topic.
     """
 
     id: int
     topic_slug: str
     stem: str
+    tags: list[TagOut]
     options: list[OptionOut]
 
 

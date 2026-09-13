@@ -78,11 +78,47 @@ async def question_payload(
         id=question.id,
         topic_slug=slug,
         stem=question.stem,
+        tags=await question_tags(session, question),
         options=[
             schemas.OptionOut(id=o.id, text=o.option_text, position=o.position)
             for o in options
         ],
     )
+
+
+async def question_tags(
+    session: AsyncSession, question: Question
+) -> list[schemas.TagOut]:
+    """A question's tags, most specific first.
+
+    Specific means rare within the topic. Sorting here rather than in the
+    client keeps the usage counts on the side that already has them.
+
+    Args:
+        session: Open async session.
+        question: Question whose tags are wanted.
+
+    Returns:
+        The tags, rarest first.
+    """
+    usage = (
+        select(QuestionTag.tag_id, func.count().label("uses"))
+        .join(Question, Question.id == QuestionTag.question_id)
+        .where(
+            Question.topic_id == question.topic_id,
+            Question.is_active.is_(True),
+        )
+        .group_by(QuestionTag.tag_id)
+        .subquery()
+    )
+    rows = await session.execute(
+        select(Tag.slug, Tag.name)
+        .join(QuestionTag, QuestionTag.tag_id == Tag.id)
+        .join(usage, usage.c.tag_id == Tag.id)
+        .where(QuestionTag.question_id == question.id)
+        .order_by(usage.c.uses, Tag.slug)
+    )
+    return [schemas.TagOut(slug=slug, name=name) for slug, name in rows]
 
 
 async def next_question_payload(
