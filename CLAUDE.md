@@ -87,12 +87,14 @@ scripts/                # project scripts (journal-tail.sh, etc.)
 journal/                # daily logs — gitignored, never committed
 docs/
   data-model.md         # schema reference + version history (update with every migration)
+  irt-model.md          # the Rasch model, learning rates, and their trade-offs
 backend/
   alembic.ini           # alembic config; DB URL deliberately absent (env.py builds it)
   app/
     __init__.py
     main.py             # FastAPI app, hello-world endpoint
     config.py           # env-driven settings, builds the DB URL per driver
+    irt.py              # Rasch probability + update; pure, no DB imports
     db/
       __init__.py
       models.py         # SQLAlchemy models — the schema source of truth
@@ -105,11 +107,14 @@ backend/
       20260913_70818f857b05_add_worked_solutions_and_distractor_.py
   scripts/
     seed.py             # loads seeds/*.yaml; deterministic option shuffle
+  tests/
+    test_irt.py         # behaviour of the Rasch update rule
   seeds/                # hand-authored question content, one file per topic
     logarithms.yaml
     trigonometry.yaml
     derivatives.yaml
   requirements.txt
+  requirements-dev.txt  # requirements.txt plus pytest
   ruff.toml             # ruff config (Google style, line-length 80)
 frontend/
   app/
@@ -258,9 +263,11 @@ Each phase ends with something runnable/testable before moving to the next.
       mapping
 
 ### Phase 2 — IRT logic (pure functions, no API yet)
-- [ ] Implement Rasch model probability function + parameter update function in isolation
-- [ ] Unit tests: verify theta/b move correctly for correct/incorrect answers
-- [ ] Decide final learning rates and document reasoning in README
+- [x] Decide learning rates: k_theta = 0.3 constant (ability is non-stationary),
+      k_b = 0.3 / (1 + n/10) (item difficulty is stationary, so it converges)
+- [x] Implement Rasch model probability function + parameter update function in isolation
+- [x] Unit tests: verify theta/b move correctly for correct/incorrect answers
+- [x] Document reasoning in `docs/irt-model.md`, to fold into the Phase 7 README
 
 ### Phase 3 — Backend API
 - [ ] `POST /users` — create a user
