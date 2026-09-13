@@ -361,8 +361,8 @@ Each phase ends with something runnable/testable before moving to the next.
 - [x] Tokens page, rendered from live utility classes so it cannot drift
 - [x] Tags as chips on the quiz, and weak spots as buttons, both leading
       into practising a single concept
-- [ ] CORS on the backend. A browser on :3000 calling :8000 is refused by
-      default, and the error is unhelpful, so this comes first
+- [x] CORS on the backend, origins from `CORS_ORIGINS` with the dev server
+      as the default; only `GET`, `POST` and `Content-Type`, no credentials
 - [ ] A data layer: typed fetch wrappers for the five endpoints
 - [ ] Real routes. Only `/preview/*` exists; `/` is still the Next starter
       page, and there is no route a student could use
