@@ -348,9 +348,32 @@ Each phase ends with something runnable/testable before moving to the next.
 - [x] Basic input validation + error handling
 
 ### Phase 4 — Frontend
-- [ ] Quiz-taking flow (question → answer → feedback → next question)
-- [ ] Progress dashboard (chart of rating over time per topic)
-- [ ] Simple, clean styling — doesn't need to be fancy, needs to be usable
+- [x] Design system: Tailwind v4, tokens in `app/globals.css` under `@theme`,
+      the three fonts via `next/font` — see `docs/design.md`
+- [x] App shell: brand, nav pills, `PROTOTYPE` tag
+- [x] Quiz screen, with feedback as a state of it rather than a route —
+      question → answer → feedback → next
+- [x] Feedback: the misconception leads, worked solution collapsed beneath
+- [x] Dashboard: topic cards with accuracy, weak spots, mastery
+- [x] Weak spots **replacing** the per-topic ability chart — a rising line
+      described difficulty-matching and a student could not act on it
+- [x] Topic complete screen
+- [x] Tokens page, rendered from live utility classes so it cannot drift
+- [x] Tags as chips on the quiz, and weak spots as buttons, both leading
+      into practising a single concept
+- [ ] CORS on the backend. A browser on :3000 calling :8000 is refused by
+      default, and the error is unhelpful, so this comes first
+- [ ] A data layer: typed fetch wrappers for the five endpoints
+- [ ] Real routes. Only `/preview/*` exists; `/` is still the Next starter
+      page, and there is no route a student could use
+- [ ] User identity — `docs/design.md` calls for a name prompt on first
+      visit, which does not exist
+- [ ] Navigation: "Continue", the weak-spot buttons and the tag chips all
+      call empty handlers today
+- [ ] Placement flow — the dark panel on the dashboard is presentation only
+- [ ] "Practise similar" on the feedback screen, which is where the steering
+      would be most convincing and currently says nothing
+- [ ] Replace the ability sparkline still on the topic complete screen
 
 ### Phase 5 — Caching layer
 - [ ] Add Valkey for caching the "next question candidate pool" per session
