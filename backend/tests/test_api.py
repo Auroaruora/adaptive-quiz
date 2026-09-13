@@ -8,7 +8,7 @@ is submitted, and that rule is only worth anything if something checks it.
 import pytest
 from sqlalchemy import select, update
 
-from app.db.models import Attempt, Question, QuestionOption
+from app.db.models import Attempt, Question, QuestionOption, QuestionTag, Tag
 
 
 async def _answer(client, user_id, question_id, option_id):
@@ -446,3 +446,87 @@ class TestProgress:
     async def test_unknown_user_is_not_found(self, client):
         response = await client.get("/progress/99999999")
         assert response.status_code == 404
+
+
+class TestWeakSpots:
+    """What /progress reports about a student's weaknesses."""
+
+    async def test_a_new_student_has_none(self, client, user_id):
+        body = (await client.get(f"/progress/{user_id}")).json()
+        assert all(t["weakSpots"] == [] for t in body["topics"])
+
+    async def test_a_wrong_answer_names_the_concepts_behind_it(
+        self, client, user_id, topic_id, session
+    ):
+        served = (
+            await client.get(
+                f"/next-question?userId={user_id}&topicId={topic_id}"
+            )
+        ).json()["question"]
+        option = await _wrong_option_id(session, served["id"])
+        await _answer(client, user_id, served["id"], option)
+
+        expected = set(
+            await session.scalars(
+                select(Tag.slug)
+                .join(QuestionTag, QuestionTag.tag_id == Tag.id)
+                .where(QuestionTag.question_id == served["id"])
+            )
+        )
+
+        body = (await client.get(f"/progress/{user_id}")).json()
+        logs = next(t for t in body["topics"] if t["slug"] == "logarithms")
+
+        assert logs["weakSpots"]
+        assert {w["slug"] for w in logs["weakSpots"]} <= expected
+        assert all(w["missed"] == 1 for w in logs["weakSpots"])
+        assert all(w["name"] for w in logs["weakSpots"])
+
+    async def test_a_correct_answer_creates_no_weak_spot(
+        self, client, user_id, topic_id, session
+    ):
+        served = (
+            await client.get(
+                f"/next-question?userId={user_id}&topicId={topic_id}"
+            )
+        ).json()["question"]
+        option = await _correct_option_id(session, served["id"])
+        await _answer(client, user_id, served["id"], option)
+
+        body = (await client.get(f"/progress/{user_id}")).json()
+        logs = next(t for t in body["topics"] if t["slug"] == "logarithms")
+        assert logs["weakSpots"] == []
+
+    async def test_it_reports_at_most_three(
+        self, client, user_id, topic_id, session
+    ):
+        """A dashboard card has room for three, not for everything."""
+        for _ in range(5):
+            served = (
+                await client.get(
+                    f"/next-question?userId={user_id}&topicId={topic_id}"
+                )
+            ).json()["question"]
+            option = await _wrong_option_id(session, served["id"])
+            await _answer(client, user_id, served["id"], option)
+
+        body = (await client.get(f"/progress/{user_id}")).json()
+        logs = next(t for t in body["topics"] if t["slug"] == "logarithms")
+        assert 0 < len(logs["weakSpots"]) <= 3
+
+    async def test_repeated_misses_of_one_concept_are_counted(
+        self, client, user_id, topic_id, session
+    ):
+        """Missing the same concept twice should read as two, not one."""
+        for _ in range(3):
+            served = (
+                await client.get(
+                    f"/next-question?userId={user_id}&topicId={topic_id}"
+                )
+            ).json()["question"]
+            option = await _wrong_option_id(session, served["id"])
+            await _answer(client, user_id, served["id"], option)
+
+        body = (await client.get(f"/progress/{user_id}")).json()
+        logs = next(t for t in body["topics"] if t["slug"] == "logarithms")
+        assert max(w["missed"] for w in logs["weakSpots"]) > 1

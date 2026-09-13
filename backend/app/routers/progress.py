@@ -78,6 +78,9 @@ async def progress(
                     ),
                     total=total,
                 ),
+                weak_spots=await services.weak_spots(
+                    session, user_id=user_id, topic_id=topic.id
+                ),
                 series=series,
             )
         )

@@ -121,6 +121,19 @@ class SubmitAnswerOut(_Wire):
     next: NextQuestionOut
 
 
+class WeakSpot(_Wire):
+    """A concept the student is currently getting wrong.
+
+    `missed` is the plain count, because "missed 3 times" is readable.
+    The ordering carries the decay, so the list is worst-first without
+    exposing a weight nobody can interpret.
+    """
+
+    slug: str
+    name: str
+    missed: int
+
+
 class TopicSummary(_Wire):
     """Headline numbers for one topic.
 
@@ -150,6 +163,7 @@ class TopicProgress(_Wire):
     slug: str
     name: str
     summary: TopicSummary
+    weak_spots: list[WeakSpot]
     series: list[SeriesPoint]
 
 

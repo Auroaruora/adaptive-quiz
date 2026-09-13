@@ -5,17 +5,20 @@ never reaches a question being asked in one place rather than repeated at
 every call site.
 """
 
+import datetime
 import random
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app import irt, schemas, selection
+from app import irt, practice, schemas, selection
 from app.db.models import (
     Attempt,
     Question,
     QuestionOption,
     QuestionStep,
+    QuestionTag,
+    Tag,
     Topic,
     UserTopicAbility,
 )
@@ -158,3 +161,58 @@ async def mastered_count(
         .select_from(Attempt)
         .where(Attempt.id.in_(latest), Attempt.is_correct.is_(True))
     )
+
+
+async def weak_spots(
+    session: AsyncSession,
+    *,
+    user_id: int,
+    topic_id: int,
+    now: datetime.datetime | None = None,
+    limit: int = 3,
+) -> list[schemas.WeakSpot]:
+    """The tags a student is currently getting wrong, worst first.
+
+    Ordered by the same decayed urgency that steers selection, so the
+    dashboard names the things the quiz is about to serve rather than a
+    separate opinion about them. The count shown alongside is the plain
+    number of misses, because "missed 3 times" is readable and a decayed
+    weight is not.
+
+    Args:
+        session: Open async session.
+        user_id: Student.
+        topic_id: Topic.
+        now: Current time, injectable so tests can age mistakes.
+        limit: How many to return.
+
+    Returns:
+        Up to `limit` weak spots, or an empty list when nothing has been
+        answered incorrectly.
+    """
+    now = now or datetime.datetime.now(datetime.UTC).replace(tzinfo=None)
+
+    rows = await session.execute(
+        select(Tag.slug, Tag.name, Attempt.answered_at)
+        .join(QuestionTag, QuestionTag.tag_id == Tag.id)
+        .join(Attempt, Attempt.question_id == QuestionTag.question_id)
+        .where(
+            Attempt.user_id == user_id,
+            Attempt.topic_id == topic_id,
+            Attempt.is_correct.is_(False),
+        )
+    )
+
+    misses: dict[str, tuple[str, list[datetime.datetime]]] = {}
+    for slug, name, answered_at in rows:
+        misses.setdefault(slug, (name, []))[1].append(answered_at)
+
+    ranked = sorted(
+        misses.items(),
+        key=lambda item: practice.urgency(item[1][1], now),
+        reverse=True,
+    )
+    return [
+        schemas.WeakSpot(slug=slug, name=name, missed=len(when))
+        for slug, (name, when) in ranked[:limit]
+    ]
