@@ -179,6 +179,22 @@ capping the pool by distance as well as by count would fix it directly.
 
 ---
 
+## Origins
+
+The frontend is served from a different origin than the API, so the
+browser preflights every JSON `POST`. The API answers for the origins in
+`CORS_ORIGINS` (comma-separated), which defaults to the local Next.js dev
+server at `http://localhost:3000` when unset. The deployed origin is added
+in Phase 6 as configuration.
+
+Only what the endpoints use is granted: `GET` and `POST`, the
+`Content-Type` header, and no credentials. Identity travels as a `userId`
+in the payload rather than a cookie, so nothing wider is needed.
+`tests/test_api.py::TestCors` checks the grant, the refusal of an unlisted
+origin, and the absence of a credentials grant.
+
+---
+
 ## Errors
 
 | Status | When |

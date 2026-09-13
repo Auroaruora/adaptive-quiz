@@ -389,6 +389,42 @@ class TestHealth:
         assert response.json() == {"status": "ok"}
 
 
+class TestCors:
+    """Cross-origin access from the frontend's dev server."""
+
+    async def test_answers_a_preflight_from_the_frontend(self, client):
+        response = await client.options(
+            "/submit-answer",
+            headers={
+                "Origin": "http://localhost:3000",
+                "Access-Control-Request-Method": "POST",
+                "Access-Control-Request-Headers": "content-type",
+            },
+        )
+        assert response.status_code == 200
+        allowed = response.headers["access-control-allow-origin"]
+        assert allowed == "http://localhost:3000"
+        assert "POST" in response.headers["access-control-allow-methods"]
+
+    async def test_refuses_an_unlisted_origin(self, client):
+        """The allow-origin header is the grant; withholding it refuses."""
+        response = await client.options(
+            "/submit-answer",
+            headers={
+                "Origin": "http://evil.example",
+                "Access-Control-Request-Method": "POST",
+            },
+        )
+        assert "access-control-allow-origin" not in response.headers
+
+    async def test_does_not_grant_credentials(self, client):
+        """Identity is a userId in the payload, never a cookie."""
+        response = await client.get(
+            "/health", headers={"Origin": "http://localhost:3000"}
+        )
+        assert "access-control-allow-credentials" not in response.headers
+
+
 class TestProgress:
     """GET /progress/{user_id}."""
 

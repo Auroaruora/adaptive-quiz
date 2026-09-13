@@ -13,6 +13,8 @@ _REPO_ROOT = pathlib.Path(__file__).resolve().parents[2]
 
 load_dotenv(_REPO_ROOT / ".env")
 
+_DEFAULT_CORS_ORIGINS = ("http://localhost:3000",)
+
 
 def _require(name: str) -> str:
     """Reads a required environment variable.
@@ -50,4 +52,21 @@ def database_url(driver: str) -> str:
     return (
         f"mysql+{driver}://{user}:{password}@{host}:{port}/{database}"
         "?charset=utf8mb4"
+    )
+
+
+def cors_origins() -> list[str]:
+    """Reads the browser origins allowed to call the API.
+
+    Taken from `CORS_ORIGINS`, comma-separated. Unset means the local
+    Next.js dev server, so a fresh checkout works without editing `.env`;
+    the deployed origin is added in Phase 6 as configuration, not code.
+
+    Returns:
+        The allowed origins, in the order given.
+    """
+    raw = os.environ.get("CORS_ORIGINS", "")
+    origins = [origin.strip() for origin in raw.split(",")]
+    return [origin for origin in origins if origin] or list(
+        _DEFAULT_CORS_ORIGINS
     )
