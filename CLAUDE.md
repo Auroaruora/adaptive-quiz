@@ -1,0 +1,332 @@
+# Adaptive Quiz Platform — Project Spec
+
+## Purpose
+A portfolio project demonstrating full-stack engineering skill for job applications
+(specifically the EdTech industry). The project shows: adaptive
+difficulty logic (IRT-based), clean data modeling, a real API, and production-style
+documentation.
+
+---
+
+## Tech Stack (decided)
+- **Frontend:** Next.js + TypeScript
+- **Backend:** Python (FastAPI)
+- **Database:** MySQL
+- **Cache:** Valkey — used for session-level "next question pool"
+  and optionally a live leaderboard
+- **Deployment target:** AWS (EC2 + RDS MySQL) — deploy this
+  LAST, after the app works locally
+
+## Core Concept
+Students answer questions; a per-topic ability estimate (θ) updates after every
+answer using a simplified one-parameter logistic IRT model (Rasch model). The
+next question served is matched to the student's
+current ability estimate. Every question also carries its own difficulty
+parameter (b), which updates based on real answer outcomes (not just a static
+"easy/medium/hard" label).
+
+---
+
+## Data Model (MySQL)
+To be designed in Phase 1. Will need tables covering: topics, questions
+(including their difficulty parameter and answer-tracking stats), users,
+per-user-per-topic ability estimates, and a log of attempts (for replaying/
+debugging the IRT updates and charting progress over time). Exact schema,
+column types, and constraints to be decided together when we reach Phase 1.
+
+## API Contract
+To be designed in Phase 3. Will need endpoints for: creating a user, fetching
+the next question matched to a student's current ability, submitting an
+answer (which updates ability/difficulty and returns the next question), and
+fetching a student's progress history. Exact request/response shapes to be
+decided together when we reach Phase 3. One fixed rule regardless of shape:
+the correct answer and the question's difficulty parameter must never be sent
+to the frontend before an answer is submitted.
+
+## IRT Update Logic (to be finalized in Phase 2)
+Simplified one-parameter logistic IRT model (Rasch model). Ability (θ) and
+difficulty (b) are on the same logit scale, and are updated online (per
+attempt) via a small stochastic gradient step — mathematically similar in
+spirit to an Elo update, but framed on the logistic ability/difficulty scale
+that real adaptive testing systems use. Exact probability function, update
+rule, and learning rates to be decided together when we reach Phase 2.
+
+Learning rates (analogous to Elo's K-factor) are TBD — likely a larger rate
+for items early on (few attempts) that shrinks as answer counts grow, and a
+smaller, roughly constant rate for user ability.
+
+**Why IRT over Elo:** Elo was designed for two competitors of the same "type"
+(chess players). IRT is purpose-built for exactly this asymmetric case —
+person ability vs. item difficulty — and is what actual standardized/adaptive
+testing platforms use, which gives this project more direct relevance to
+IXL's domain. Document this trade-off (and the parameter-estimation
+simplification vs. full 2PL/3PL IRT) in the Phase 7 README.
+
+---
+
+## Repo Structure
+**This section is the living record of the repo's file tree. Update it every
+time a file or directory is created, moved, renamed, or deleted.**
+
+Nothing is created yet. Planned so far (application structure decided in
+Phase 0):
+
+```
+CLAUDE.md
+.gitignore              # must include journal/
+.claude/
+  settings.json         # hook config (committed)
+  settings.local.json   # machine-specific overrides (gitignored)
+  hooks/                # hook scripts
+  commands/             # custom slash commands
+    park.md             # /park — append a cleaned-up Parking Lot entry
+scripts/                # project scripts (journal-tail.sh, etc.)
+journal/                # daily logs — gitignored, never committed
+```
+
+---
+
+## Code Style
+
+Each language follows its established convention, preferring Google's style
+guide where one exists. Install the formatter and let it enforce the rules
+rather than applying them by hand.
+
+**Python (backend)**
+- Google Python Style Guide (which builds on PEP 8).
+- Google-style docstrings — one style throughout, never mixed.
+- Formatter/linter: `ruff`.
+- Type hints on all function signatures.
+
+**TypeScript (frontend)**
+- Google TypeScript Style Guide.
+- Formatter: Prettier. Linter: ESLint. Where the Google guide and Prettier
+  disagree on formatting, take Prettier's output.
+- JSDoc comments only for non-obvious behavior and intent — types already
+  carry the type information, so do not restate them in comments.
+
+**SQL (MySQL)**
+- No Google guide exists. Keywords uppercase, identifiers snake_case,
+  consistent clause indentation.
+- Each migration opens with a header comment stating what it does and why.
+  Individual columns are not commented unless non-obvious.
+
+**Shell**
+- Google Shell Style Guide.
+- All scripts pass `shellcheck`.
+
+**Docker / YAML**
+- No Google guide for Dockerfiles; follow Docker's own best practices — pin
+  base image versions, multi-stage builds, do not run as root.
+- YAML: 2-space indent, no tabs.
+
+**Comments in general**
+- Comment why, not what. Code that needs a comment to explain what it does
+  should be rewritten instead.
+- No commented-out code left in the repo.
+
+---
+
+## Commit Style
+
+Conventional Commits. One logical change per commit.
+
+```
+<type>(<scope>): <subject>
+
+<body — optional, why not what>
+```
+
+**Types**
+
+| Type | Use for |
+|---|---|
+| `feat` | New functionality |
+| `fix` | Bug fix |
+| `refactor` | Restructuring with no behaviour change |
+| `test` | Adding or changing tests |
+| `docs` | Documentation only |
+| `chore` | Tooling, dependencies, config |
+| `build` | Docker, deployment, CI |
+| `perf` | Performance work |
+
+**Scopes** — the area touched: `backend`, `frontend`, `db`, `cache`, `irt`,
+`deploy`, `docs`. Omit when a commit genuinely spans everything.
+
+**Subject line**
+- Imperative mood: "add", not "added" or "adds".
+- Lowercase, no trailing period, under 72 characters.
+- Describes the change, not the file: `feat(irt): add ability update function`,
+  not `update irt.py`.
+
+**Body**
+- Only when the change needs a why. Skip it otherwise.
+- Wrap at 72 characters.
+- Explains reasoning or trade-offs, not a restatement of the diff.
+
+**Rules**
+- One logical change per commit. Formatting and behaviour changes go in
+  separate commits.
+- Never commit `.env`, real credentials, or `journal/`.
+- Commit at every review checkpoint, not in one large batch at the end of a
+  phase.
+
+**Examples**
+
+```
+feat(db): add attempts table for replaying rating updates
+
+Stores both ratings at answer time so updates can be recomputed
+and charted later without re-deriving them.
+```
+
+```
+fix(backend): strip correct_answer from next-question response
+chore: add ruff and prettier to dev dependencies
+docs: record phase 1 sub-steps in the build plan
+```
+
+---
+
+## Build Plan — Work Through Phases One At A Time
+
+Each phase ends with something runnable/testable before moving to the next.
+**Do not skip ahead — confirm each phase works before starting the next.**
+
+### Phase 0 — Project scaffolding
+- [ ] Decide and create repo structure (record it in the Repo Structure section above)
+- [ ] MySQL running locally (Docker recommended)
+- [ ] FastAPI "hello world" endpoint running
+- [ ] Next.js "hello world" page running
+- [ ] `.env` setup for DB credentials (never committed)
+
+### Phase 1 — Database + seed data
+- [ ] Design and run schema migrations
+- [ ] Write 30–50 hand-written questions across 2–3 topics
+- [ ] Seed script to load questions into MySQL
+- [ ] Manually verify data via a DB client
+
+### Phase 2 — IRT logic (pure functions, no API yet)
+- [ ] Implement Rasch model probability function + parameter update function in isolation
+- [ ] Unit tests: verify theta/b move correctly for correct/incorrect answers
+- [ ] Decide final learning rates and document reasoning in README
+
+### Phase 3 — Backend API
+- [ ] `POST /users` — create a user
+- [ ] `GET /next-question?userId=&topicId=` — question matched to current rating
+- [ ] `POST /submit-answer` — grades answer, updates both ratings, returns next question
+- [ ] `GET /progress/:userId` — rating history per topic (for a chart later)
+- [ ] Basic input validation + error handling
+
+### Phase 4 — Frontend
+- [ ] Quiz-taking flow (question → answer → feedback → next question)
+- [ ] Progress dashboard (chart of rating over time per topic)
+- [ ] Simple, clean styling — doesn't need to be fancy, needs to be usable
+
+### Phase 5 — Caching layer
+- [ ] Add Valkey for caching the "next question candidate pool" per session
+- [ ] (Optional) live leaderboard using Redis sorted sets
+
+### Phase 6 — Deployment
+- [ ] Dockerize backend + frontend
+- [ ] Deploy MySQL via RDS
+- [ ] Deploy backend + frontend to AWS (EC2)
+- [ ] Confirm live demo works end-to-end
+
+### Phase 7 — Documentation polish
+- [ ] README: architecture diagram, setup instructions, demo link
+- [ ] "Why these decisions" section (IRT vs static difficulty vs Elo, MySQL choice, caching rationale)
+- [ ] "How this would scale" section
+- [ ] Screenshots / short demo GIF
+
+---
+
+## Parking Lot
+Ideas, concerns, and half-formed thoughts not yet scheduled. Capture is free —
+add anything, however rough. Drained at phase-planning time: when a phase is
+planned, read this list first and pull anything relevant into that phase's
+sub-steps. Delete an entry once it is handled or rejected.
+
+Entries are tagged with a target phase where known, `[unsure]` where not.
+
+- (empty)
+
+---
+
+## Working Protocol
+
+### 1. Plan first, then confirm
+- Phases in the build plan are deliberately high-level. Do not write sub-steps
+  for a phase in advance — break a phase into sub-steps at the start of that
+  phase, when there is enough information to do it well.
+- When planning a phase, read the Parking Lot first and pull anything relevant
+  into that phase's sub-steps.
+- Write the agreed sub-steps into that phase's checklist so the file records
+  what was actually done, not what was guessed.
+- Before each chunk of work, state the plan: what will be built, what files
+  will be touched, what decisions need making.
+- Wait for explicit confirmation before writing any code or creating any files.
+- If an unplanned decision comes up mid-work, stop and ask rather than
+  deciding unilaterally.
+- Make one meaningful decision at a time (e.g. "confirm IRT learning rates"
+  before "write the submit-answer endpoint").
+
+### 2. Work in reviewable chunks
+- Stop at natural checkpoints for review rather than running long.
+- Prefer small, testable increments over large code dumps.
+- Do not skip ahead to the next phase without confirmation.
+- Whenever a file or directory is created, moved, renamed, or deleted, update
+  the Repo Structure section in this file in the same step.
+- Update this file's checkboxes as phases complete.
+
+### 3. Journal every stop
+Every time we stop to review a chunk, append an entry to today's journal file
+(`journal/log-YYYY-MM-DD.md`). No need to ask permission — write it and show
+it as part of the chat report.
+
+- Entry numbers are `#N-M`: **N** = days since project start (start date =
+  day 1), **M** = entry number within that day, resetting to 1 each day.
+- Keep it short. What was done, and nothing else.
+- **Never commit the journal** — `journal/` goes in `.gitignore`.
+- **Never read a journal file in full.** To append, get the next M with
+  `grep -c '^### #' <today's file>` — do not read the contents.
+- If past context is genuinely needed, read at most the last 2–3 entries via
+  `scripts/journal-tail.sh`. Never read previous days' files.
+- Timestamps come from `date +%H:%M` on the local machine.
+
+Format:
+
+```
+### #<N>-<M> (HH:MM) — <one-line title>
+
+- one point per line, split a run-on sentence into separate bullets
+- say what was done, not how it went
+- a number that was measured is worth a line; a verdict on it is not
+- if something was wrong and got fixed, that is one line, not a section
+
+Files created:
+- path/to/new_file.py
+
+Files modified:
+- path/to/existing_file.py
+```
+
+Omit either file list if empty.
+
+### 4. Report at the end of each chunk
+- Summarize what was done and show the journal entry just written.
+
+---
+
+## Tooling Locations
+Project-scoped Claude Code config lives in `.claude/` at the repo root:
+
+- `.claude/settings.json` — hook configuration; committed, shared with the repo
+- `.claude/settings.local.json` — machine-specific overrides; gitignored
+- `.claude/hooks/` — hook scripts
+- `.claude/commands/` — custom slash commands, one Markdown file per command
+  (filename becomes the command name)
+- `scripts/` — project scripts not tied to Claude Code
+
+Hooks are registered in `.claude/settings.json` under a `hooks` key, keyed by
+event name, each entry pointing at a `command`.
