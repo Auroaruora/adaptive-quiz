@@ -142,6 +142,7 @@ frontend/
     globals.css         # Tailwind v4 @theme — the design tokens live here
     preview/
       feedback/page.tsx # dev-only side-by-side of both feedback states
+      quiz/page.tsx     # dev-only clickable ask -> answer -> feedback loop
   components/
     quiz/
       OptionButton.tsx  # one option; idle/selected/correct/incorrect/muted
@@ -150,7 +151,9 @@ frontend/
       FeedbackPanel.tsx # composes the post-answer region
       MisconceptionNote.tsx
       SolutionSteps.tsx
-      AbilityDelta.tsx
+      AbilityGain.tsx   # renders only when ability rises; see design.md
+      MasteryBar.tsx    # progress through a topic, counted in mastered
+      QuizScreen.tsx    # asking and feedback as one screen
   lib/
     types.ts            # TS mirrors of the API payloads
     fixtures.ts         # sample payloads for building screens without a backend
