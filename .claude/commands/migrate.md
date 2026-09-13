@@ -17,29 +17,47 @@ What it should do: $ARGUMENTS
 
 ## Writing the revision
 
-3. `cd backend && alembic revision -m "<short imperative description>"`.
-   Never pass `--autogenerate` — revisions are hand-written in this project.
-4. Fill in `upgrade()` and `downgrade()` using `op.execute()` with raw SQL,
-   following the SQL rules in the Code Style section of `CLAUDE.md`.
-5. Put the why in the revision docstring, not inline comments — especially for
-   anything non-obvious (generated columns, composite keys, index column
-   order). A reader six months out should not have to reverse-engineer it.
-6. Keep one revision to one or two related tables. A revision that fails
+3. Edit `app/db/models.py` first — the models are the schema's source of truth.
+   Then `cd backend && ./venv/bin/alembic revision --autogenerate -m "<short
+   imperative description>"`.
+4. Review every line of what it generated. Autogenerate is a starting point,
+   never the finished revision. It has three known blind spots here:
+   - **`CHECK` constraints are never detected.** They are silently omitted, so
+     add them by hand with `op.create_check_constraint()`, and drop them in
+     `downgrade()` with `type_="check"` before the column they constrain.
+   - **The generated `downgrade()` drops indexes before tables**, which fails
+     with error 1553 whenever the index backs a foreign key — true of every
+     index in this schema, since they all lead with an FK column. Delete those
+     `drop_index` calls; `DROP TABLE` removes a table's indexes anyway.
+   - **Boolean `server_default`s produce no-op `alter_column` churn** when the
+     model writes `TRUE`/`FALSE` but MySQL stores `'1'`/`'0'`. Fix the model to
+     match, rather than deleting the line, or it comes back next revision.
+5. Replace the boilerplate docstring with a real one saying what the revision
+   does and why — especially for anything non-obvious (generated columns,
+   composite keys, index column order). A reader six months out should not have
+   to reverse-engineer it. Strip the `# ### commands auto generated ###`
+   markers while you are there.
+6. Drop to `op.execute()` with raw SQL only where autogenerate cannot express
+   the change, following the SQL rules in the Code Style section of `CLAUDE.md`.
+7. Keep one revision to one or two related tables. A revision that fails
    halfway leaves MySQL partly changed, and smaller revisions limit that.
 
 ## Verifying
 
-7. Run `scripts/migrate-check.sh`, which round-trips the migration: upgrade,
+8. Run `scripts/migrate-check.sh`, which round-trips the migration: upgrade,
    downgrade one step, upgrade again. If `downgrade()` is broken this is where
    it shows up, not three revisions later.
-8. Inspect the result in MySQL — `SHOW CREATE TABLE <name>` — and confirm the
+9. Inspect the result in MySQL — `SHOW CREATE TABLE <name>` — and confirm the
    types, constraints, and indexes match what `docs/data-model.md` describes.
    Report any difference rather than quietly accepting it.
 
 ## Rules
 
-- Never edit a revision that has already been applied anywhere. Write a new
-  one instead.
+- Editing a freshly generated revision is expected — that is step 4. The rule
+  is never to edit one that has already been **applied** anywhere: write a new
+  revision instead.
+- If a model fix means regenerating, delete the generated file first, or you
+  end up with two revisions describing the same change.
 - Never hand-edit `alembic_version`.
 - If a `CHECK` constraint or a generated column is involved, confirm the MySQL
   version supports it before assuming it took effect — MySQL parses and
