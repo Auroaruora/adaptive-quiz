@@ -89,6 +89,7 @@ journal/                # daily logs — gitignored, never committed
 docs/
   data-model.md         # schema reference + version history (update with every migration)
   irt-model.md          # the Rasch model, learning rates, and their trade-offs
+  design.md             # visual system; tokens are the only permitted values
   api.md                # endpoint contract, secrecy rule, selection tiers
 backend/
   alembic.ini           # alembic config; DB URL deliberately absent (env.py builds it)
@@ -134,9 +135,26 @@ backend/
   .coveragerc           # greenlet tracing, without which coverage misreads
   ruff.toml             # ruff config (Google style, line-length 80)
 frontend/
+  AGENTS.md             # written by next dev; read node_modules/next/dist/docs first
   app/
     page.tsx            # Next.js hello-world page
-    layout.tsx
+    layout.tsx          # next/font wiring for the three design families
+    globals.css         # Tailwind v4 @theme — the design tokens live here
+    preview/
+      feedback/page.tsx # dev-only side-by-side of both feedback states
+  components/
+    quiz/
+      OptionButton.tsx  # one option; idle/selected/correct/incorrect/muted
+      OptionList.tsx    # decides each option's state after an answer
+      QuestionStem.tsx
+      FeedbackPanel.tsx # composes the post-answer region
+      MisconceptionNote.tsx
+      SolutionSteps.tsx
+      AbilityDelta.tsx
+  lib/
+    types.ts            # TS mirrors of the API payloads
+    fixtures.ts         # sample payloads for building screens without a backend
+  postcss.config.mjs    # @tailwindcss/postcss
   eslint.config.mjs      # eslint-config-next + eslint-config-prettier
   .prettierrc.json
   package.json
@@ -183,6 +201,11 @@ rather than applying them by hand.
 - Comment why, not what. Code that needs a comment to explain what it does
   should be rewritten instead.
 - No commented-out code left in the repo.
+
+**Designl**
+- Visual design follows `docs/design.md`. Use the Tailwind theme tokens
+  rather than raw hex, pixel values, or default Tailwind scale classes.
+  Reference screens are in `docs/design/`.
 
 ---
 
