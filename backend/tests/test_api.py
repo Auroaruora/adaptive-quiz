@@ -581,3 +581,62 @@ class TestQuestionTags:
         ).text.lower()
         for forbidden in ("iscorrect", "misconception", "solution"):
             assert forbidden not in raw
+
+
+class TestPractisingOneTag:
+    """GET /next-question?tag= — drilling a single concept."""
+
+    async def _slug_of_served(self, client, user_id, topic_id, tag=None):
+        query = f"/next-question?userId={user_id}&topicId={topic_id}"
+        if tag:
+            query += f"&tag={tag}"
+        return (await client.get(query)).json()
+
+    async def test_every_served_question_carries_the_tag(
+        self, client, user_id, topic_id, session
+    ):
+        for _ in range(12):
+            body = await self._slug_of_served(
+                client, user_id, topic_id, "log-definition"
+            )
+            if body["question"] is None:
+                break
+            slugs = {t["slug"] for t in body["question"]["tags"]}
+            assert "log-definition" in slugs
+
+            option = await _correct_option_id(session, body["question"]["id"])
+            await _answer(client, user_id, body["question"]["id"], option)
+
+    async def test_it_completes_when_that_concept_runs_out(
+        self, client, user_id, topic_id, session
+    ):
+        """Finishing one tag must not claim the whole topic is done."""
+        for _ in range(20):
+            body = await self._slug_of_served(
+                client, user_id, topic_id, "change-of-base"
+            )
+            if body["question"] is None:
+                break
+            option = await _correct_option_id(session, body["question"]["id"])
+            await _answer(client, user_id, body["question"]["id"], option)
+
+        assert body["complete"] is True
+
+        unfiltered = await self._slug_of_served(client, user_id, topic_id)
+        assert unfiltered["complete"] is False
+        assert unfiltered["question"] is not None
+
+    async def test_an_unknown_tag_serves_nothing(
+        self, client, user_id, topic_id
+    ):
+        body = await self._slug_of_served(
+            client, user_id, topic_id, "not-a-real-tag"
+        )
+        assert body["complete"] is True
+        assert body["question"] is None
+
+    async def test_omitting_the_tag_still_serves_the_whole_topic(
+        self, client, user_id, topic_id
+    ):
+        body = await self._slug_of_served(client, user_id, topic_id)
+        assert body["question"] is not None

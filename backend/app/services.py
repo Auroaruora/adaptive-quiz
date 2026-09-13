@@ -128,6 +128,7 @@ async def next_question_payload(
     topic_id: int,
     theta: float,
     rng: random.Random | None = None,
+    tag_slug: str | None = None,
 ) -> schemas.NextQuestionOut:
     """Chooses the next question and wraps it with the current ability.
 
@@ -137,12 +138,18 @@ async def next_question_payload(
         topic_id: Topic to serve from.
         theta: Student's current ability in this topic.
         rng: Source of randomness, injectable so tests can pin it.
+        tag_slug: Restricts the pool to one concept.
 
     Returns:
         The next question, or a completion signal when none is left.
     """
     question = await selection.choose_question(
-        session, user_id=user_id, topic_id=topic_id, theta=theta, rng=rng
+        session,
+        user_id=user_id,
+        topic_id=topic_id,
+        theta=theta,
+        rng=rng,
+        tag_slug=tag_slug,
     )
     return schemas.NextQuestionOut(
         question=(

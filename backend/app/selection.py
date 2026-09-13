@@ -54,19 +54,33 @@ def _latest_attempt_ids(user_id: int, topic_id: int) -> Select:
     )
 
 
-def _unseen(user_id: int, topic_id: int) -> Select:
+def _tagged(tag_slug: str) -> Select:
+    """Selects the ids of questions carrying a tag."""
+    return (
+        select(QuestionTag.question_id)
+        .join(Tag, Tag.id == QuestionTag.tag_id)
+        .where(Tag.slug == tag_slug)
+    )
+
+
+def _unseen(user_id: int, topic_id: int, tag_slug: str | None = None) -> Select:
     """Selects active questions the student has never attempted."""
     attempted = select(Attempt.question_id).where(
         Attempt.user_id == user_id, Attempt.topic_id == topic_id
     )
-    return select(Question).where(
+    query = select(Question).where(
         Question.topic_id == topic_id,
         Question.is_active.is_(True),
         Question.id.not_in(attempted),
     )
+    if tag_slug is not None:
+        query = query.where(Question.id.in_(_tagged(tag_slug)))
+    return query
 
 
-def _answered_wrong(user_id: int, topic_id: int) -> Select:
+def _answered_wrong(
+    user_id: int, topic_id: int, tag_slug: str | None = None
+) -> Select:
     """Selects active questions whose most recent attempt was wrong.
 
     Answering one correctly retires it from this tier, which is what makes
@@ -76,11 +90,14 @@ def _answered_wrong(user_id: int, topic_id: int) -> Select:
         Attempt.id.in_(_latest_attempt_ids(user_id, topic_id)),
         Attempt.is_correct.is_(False),
     )
-    return select(Question).where(
+    query = select(Question).where(
         Question.topic_id == topic_id,
         Question.is_active.is_(True),
         Question.id.in_(still_wrong),
     )
+    if tag_slug is not None:
+        query = query.where(Question.id.in_(_tagged(tag_slug)))
+    return query
 
 
 def _closest(
@@ -217,6 +234,7 @@ async def choose_question(
     theta: float,
     rng: random.Random | None = None,
     now: datetime.datetime | None = None,
+    tag_slug: str | None = None,
 ) -> Question | None:
     """Chooses the next question for a student in one topic.
 
@@ -232,16 +250,19 @@ async def choose_question(
         theta: Student's current ability in this topic.
         rng: Source of randomness, injectable so tests can pin it.
         now: Current time, injectable so tests can age mistakes.
+        tag_slug: Restricts the pool to one concept, for practising a
+            single weak spot. None serves the whole topic.
 
     Returns:
-        The chosen question, or None when the topic is complete.
+        The chosen question, or None when there is nothing left — the
+        whole topic when unfiltered, or that one concept when filtered.
     """
     rng = rng or random.Random()
     now = now or datetime.datetime.now(datetime.UTC).replace(tzinfo=None)
 
     mistakes = await _mistake_times(session, user_id=user_id, topic_id=topic_id)
 
-    unseen = list(await session.scalars(_unseen(user_id, topic_id)))
+    unseen = list(await session.scalars(_unseen(user_id, topic_id, tag_slug)))
     if unseen:
         return _steered(
             unseen,
@@ -252,7 +273,9 @@ async def choose_question(
             rng,
         )
 
-    wrong = list(await session.scalars(_answered_wrong(user_id, topic_id)))
+    wrong = list(
+        await session.scalars(_answered_wrong(user_id, topic_id, tag_slug))
+    )
     if not wrong:
         return None
 

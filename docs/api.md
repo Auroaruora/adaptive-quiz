@@ -56,18 +56,30 @@ that is stored, and names need not be unique.
 ← 201 { "id": 7, "displayName": "Ada", "createdAt": "..." }
 ```
 
-### `GET /next-question?userId=&topicId=`
+### `GET /next-question?userId=&topicId=&tag=`
 
-Serves the question best matched to the student's current ability.
+Serves the next question. `tag` is optional and narrows the pool to one
+concept, for drilling a single weak spot — the slug comes from a question's
+`tags` or from a topic's `weakSpots`.
+
+When a tag is given, `complete: true` means *that concept* is finished, not
+the topic. An unknown tag serves nothing and reports complete, since a pool
+of no questions is an exhausted pool.
 
 ```
-← { "question": { "id": 200, "topicSlug": "logarithms",
-                  "stem": "...", "options": [ {id, text, position} x4 ] },
+← { "question": { "id": 200, "topicSlug": "logarithms", "stem": "...",
+                  "tags":    [ { "slug": "log-equation",
+                                 "name": "Log equation" }, ... ],
+                  "options": [ {id, text, position} x4 ] },
     "ability":  { "theta": 0.0, "level": "progressing" },
     "complete": false }
 ```
 
 `question` is null exactly when `complete` is true.
+
+`tags` are ordered rarest first within the topic, so a client showing only
+a few shows the most specific. They name a method, never an outcome, so
+they are safe to show before an answer.
 
 ### `POST /submit-answer`
 

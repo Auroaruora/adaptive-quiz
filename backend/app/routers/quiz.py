@@ -44,18 +44,21 @@ async def _require(session: AsyncSession, model, key, what: str):
 async def next_question(
     user_id: int = Query(alias="userId", gt=0),
     topic_id: int = Query(alias="topicId", gt=0),
+    tag: str | None = Query(default=None, max_length=50),
     session: AsyncSession = Depends(get_session),
 ) -> schemas.NextQuestionOut:
-    """Serves the question best matched to a student's current ability.
+    """Serves the next question, optionally from one concept only.
 
     Args:
         user_id: Student to serve.
         topic_id: Topic to serve from.
+        tag: Restricts the pool to one concept, for practising a single
+            weak spot. Omit to serve the whole topic.
         session: Injected database session.
 
     Returns:
-        The next question, or a completion signal when the student has
-        answered every active question in the topic correctly.
+        The next question, or a completion signal — meaning the whole
+        topic is finished, or that one concept is, when `tag` is given.
     """
     await _require(session, User, user_id, "user")
     await _require(session, Topic, topic_id, "topic")
@@ -66,7 +69,11 @@ async def next_question(
     await session.commit()
 
     return await services.next_question_payload(
-        session, user_id=user_id, topic_id=topic_id, theta=ability.theta
+        session,
+        user_id=user_id,
+        topic_id=topic_id,
+        theta=ability.theta,
+        tag_slug=tag,
     )
 
 
