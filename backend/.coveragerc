@@ -1,0 +1,6 @@
+# Without this, coverage does not follow SQLAlchemy's greenlet and
+# under-reports anything reached through an async DB call — it showed the
+# routers at 38% when every line of them was in fact executed.
+[run]
+concurrency = greenlet,thread
+source = app
