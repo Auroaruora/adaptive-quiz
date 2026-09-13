@@ -197,6 +197,46 @@ class QuestionStep(Base):
     body: Mapped[str] = mapped_column(String(500), nullable=False)
 
 
+class Tag(Base):
+    """A concept a question exercises, such as the product rule.
+
+    Questions carry several, and two questions are alike to the extent
+    their tags overlap. That is what makes "practise something similar"
+    possible without a hand-built map of which question follows which.
+    """
+
+    __tablename__ = "tags"
+    __table_args__ = _TABLE_ARGS
+
+    id: Mapped[int] = mapped_column(_UINT, primary_key=True)
+    slug: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
+    name: Mapped[str] = mapped_column(String(100), nullable=False)
+
+
+class QuestionTag(Base):
+    """Joins a question to one of its tags."""
+
+    __tablename__ = "question_tags"
+    __table_args__ = (
+        Index("idx_tag", "tag_id"),
+        _TABLE_ARGS,
+    )
+
+    question_id: Mapped[int] = mapped_column(
+        _UINT,
+        ForeignKey("questions.id", ondelete="CASCADE"),
+        primary_key=True,
+    )
+    # RESTRICT, not CASCADE: deleting a tag that questions still carry
+    # would silently make them less similar to everything, which is the
+    # kind of change that should be deliberate.
+    tag_id: Mapped[int] = mapped_column(
+        _UINT,
+        ForeignKey("tags.id", ondelete="RESTRICT"),
+        primary_key=True,
+    )
+
+
 class User(Base):
     """A student. No authentication exists in this project by design."""
 
