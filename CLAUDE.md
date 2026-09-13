@@ -82,9 +82,30 @@ docker-compose.yml       # local MySQL service
     park.md             # /park — append a cleaned-up Parking Lot entry
 scripts/                # project scripts (journal-tail.sh, etc.)
 journal/                # daily logs — gitignored, never committed
+docs/
+  data-model.md         # schema reference + version history (update with every migration)
 backend/
+  alembic.ini           # alembic config; DB URL deliberately absent (env.py builds it)
   app/
+    __init__.py
     main.py             # FastAPI app, hello-world endpoint
+    config.py           # env-driven settings, builds the DB URL per driver
+    db/
+      __init__.py
+      models.py         # SQLAlchemy models — the schema source of truth
+      session.py        # async engine + session factory (aiomysql)
+  migrations/
+    env.py              # alembic env; runs sync over pymysql
+    script.py.mako
+    versions/
+      20260913_9fb0defd7b0c_initial_schema.py
+      20260913_70818f857b05_add_worked_solutions_and_distractor_.py
+  scripts/
+    seed.py             # loads seeds/*.yaml; deterministic option shuffle
+  seeds/                # hand-authored question content, one file per topic
+    logarithms.yaml
+    trigonometry.yaml
+    derivatives.yaml
   requirements.txt
   ruff.toml             # ruff config (Google style, line-length 80)
 frontend/
@@ -215,9 +236,19 @@ Each phase ends with something runnable/testable before moving to the next.
 - [x] `.env` setup for DB credentials (never committed)
 
 ### Phase 1 — Database + seed data
-- [ ] Design and run schema migrations
-- [ ] Write 30–50 hand-written questions across 2–3 topics
-- [ ] Seed script to load questions into MySQL
+- [x] Decide migration tooling (Alembic + SQLAlchemy) and DB access shape
+      (async aiomysql for the app, sync pymysql for Alembic and seeding)
+- [x] Design the schema together — recorded in `docs/data-model.md`
+- [x] Design and run schema migrations
+- [x] Decide topics: three higher-math strands, narrow rather than broad so each
+      measures the single latent ability the Rasch model assumes
+      — `logarithms`, `trigonometry`, `derivatives`
+- [x] Write 54 hand-written questions — 18 per topic, split 6 easy / 6 medium /
+      6 hard. Stems are plain text (no LaTeX), so Phase 4 can render them as-is
+- [x] Add worked solutions and per-distractor feedback (schema v2), so a wrong
+      answer explains the specific mistake before showing the steps
+- [x] Seed script to load topics and questions into MySQL, with deterministic
+      option shuffling so the correct answer is not biased toward one position
 - [ ] Manually verify data via a DB client
 
 ### Phase 2 — IRT logic (pure functions, no API yet)

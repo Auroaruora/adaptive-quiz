@@ -1,0 +1,413 @@
+# Derivatives — 18 questions, 6 easy / 6 medium / 6 hard.
+#
+# `difficulty` is the authored label only. The seed script derives the
+# starting difficulty_b from it via LABEL_TO_INITIAL_B in app/db/models.py.
+#
+# `solution` becomes rows in question_steps, numbered from the list order.
+# `misconception` on a wrong option names the specific error that choice
+# encodes. The correct option must not carry one.
+#
+# Option order in this file is authoring order only — the seed script
+# reshuffles it deterministically from a hash of the stem.
+
+topic:
+  slug: derivatives
+  name: Derivatives
+  description: >-
+    The power, product, quotient and chain rules, derivatives of standard
+    functions, implicit and logarithmic differentiation, and tangent lines.
+
+questions:
+  # --- easy: power rule and standard derivatives ---
+
+  - stem: "d/dx of x^4"
+    difficulty: easy
+    solution:
+      - "The power rule: d/dx of x^n is n*x^(n-1)."
+      - "Here n = 4."
+      - "So the derivative is 4x^3."
+    options:
+      - text: "4x^3"
+        correct: true
+      - text: "4x^4"
+        misconception: >-
+          The exponent must drop by one. The power rule gives 4x^3.
+      - text: "x^3"
+        misconception: >-
+          The original exponent also becomes the coefficient, giving
+          4x^3.
+      - text: "3x^4"
+        misconception: >-
+          Coefficient and exponent are swapped. The old exponent 4
+          becomes the coefficient and the new exponent is 3.
+
+  - stem: "d/dx of 7"
+    difficulty: easy
+    solution:
+      - "7 is a constant, so its graph is a horizontal line."
+      - "A horizontal line has slope 0."
+      - "So the derivative is 0."
+    options:
+      - text: "0"
+        correct: true
+      - text: "7"
+        misconception: >-
+          A constant never changes, so its rate of change is 0.
+      - text: "7x"
+        misconception: >-
+          That is an antiderivative of 7, not a derivative.
+      - text: "1"
+        misconception: >-
+          The derivative of x is 1. The derivative of a constant is 0.
+
+  - stem: "d/dx of 3x"
+    difficulty: easy
+    solution:
+      - "The derivative of x is 1."
+      - "A constant multiple carries straight through: d/dx of 3x = 3 * 1."
+      - "So the derivative is 3."
+    options:
+      - text: "3"
+        correct: true
+      - text: "3x"
+        misconception: >-
+          That is the original function. Differentiating a linear term
+          leaves its slope, 3.
+      - text: "x"
+        misconception: >-
+          The coefficient 3 stays. The derivative is 3.
+      - text: "0"
+        misconception: >-
+          Only constants have derivative 0. 3x changes as x changes.
+
+  - stem: "d/dx of sin(x)"
+    difficulty: easy
+    solution:
+      - "The derivative of sin(x) is cos(x)."
+      - "This is one of the standard results worth memorising."
+    options:
+      - text: "cos(x)"
+        correct: true
+      - text: "-cos(x)"
+        misconception: >-
+          The minus sign belongs to the derivative of cos(x), which is
+          -sin(x).
+      - text: "-sin(x)"
+        misconception: >-
+          That is the second derivative of sin(x). The first derivative
+          is cos(x).
+      - text: "tan(x)"
+        misconception: >-
+          Tangent comes from dividing sine by cosine, not from
+          differentiating sine.
+
+  - stem: "d/dx of e^x"
+    difficulty: easy
+    solution:
+      - "e^x is its own derivative."
+      - "That property is exactly what makes e the natural base."
+    options:
+      - text: "e^x"
+        correct: true
+      - text: "x*e^(x-1)"
+        misconception: >-
+          The power rule applies when x is the base. Here x is the
+          exponent and the base is constant.
+      - text: "e"
+        misconception: >-
+          The exponent is not a coefficient. The whole function e^x is
+          unchanged by differentiating.
+      - text: "x*e^x"
+        misconception: >-
+          No extra factor appears. The derivative of e^x is exactly e^x.
+
+  - stem: "d/dx of (x^3 + 2x)"
+    difficulty: easy
+    solution:
+      - "Differentiate term by term."
+      - "d/dx of x^3 = 3x^2."
+      - "d/dx of 2x = 2."
+      - "So the derivative is 3x^2 + 2."
+    options:
+      - text: "3x^2 + 2"
+        correct: true
+      - text: "3x^2 + 2x"
+        misconception: >-
+          The derivative of 2x is 2, not 2x. The x disappears.
+      - text: "3x^2"
+        misconception: >-
+          The second term contributes 2, which must not be dropped.
+      - text: "x^4/4 + x^2"
+        misconception: >-
+          Those are antiderivatives. The question asks for the
+          derivative.
+
+  # --- medium: chain, product and quotient rules ---
+
+  - stem: "d/dx of (3x^2 + 5)^4"
+    difficulty: medium
+    solution:
+      - "Use the chain rule: differentiate the outside, then multiply by
+         the derivative of the inside."
+      - "Outside: 4(3x^2 + 5)^3."
+      - "Inside: d/dx of (3x^2 + 5) = 6x."
+      - "Multiply: 24x(3x^2 + 5)^3."
+    options:
+      - text: "24x(3x^2 + 5)^3"
+        correct: true
+      - text: "4(3x^2 + 5)^3"
+        misconception: >-
+          The chain rule also needs the inside derivative. Multiplying
+          by 6x gives 24x(3x^2 + 5)^3.
+      - text: "12x(3x^2 + 5)^3"
+        misconception: >-
+          4 times 6x is 24x, not 12x.
+      - text: "4(6x)^3"
+        misconception: >-
+          The exponent applies to the whole bracket, which stays intact.
+          Only the outer power drops by one.
+
+  - stem: "d/dx of x^2 * sin(x)"
+    difficulty: medium
+    solution:
+      - "Use the product rule: (fg)' = f'g + fg'."
+      - "f = x^2, so f' = 2x."
+      - "g = sin(x), so g' = cos(x)."
+      - "The derivative is 2x*sin(x) + x^2*cos(x)."
+    options:
+      - text: "2x*sin(x) + x^2*cos(x)"
+        correct: true
+      - text: "2x*cos(x)"
+        misconception: >-
+          That multiplies the two derivatives together. The product rule
+          adds two separate terms.
+      - text: "2x*sin(x) - x^2*cos(x)"
+        misconception: >-
+          The product rule adds its terms. Subtraction belongs to the
+          quotient rule.
+      - text: "2x*sin(x)*cos(x)"
+        misconception: >-
+          The two terms are added, not multiplied together.
+
+  - stem: "d/dx of ln(x)"
+    difficulty: medium
+    solution:
+      - "The derivative of ln(x) is 1/x."
+      - "It holds for x > 0, where ln(x) is defined."
+    options:
+      - text: "1/x"
+        correct: true
+      - text: "ln(x)/x"
+        misconception: >-
+          No logarithm remains after differentiating. The result is
+          exactly 1/x.
+      - text: "x"
+        misconception: >-
+          That inverts the relationship. The derivative is the
+          reciprocal, 1/x.
+      - text: "1/ln(x)"
+        misconception: >-
+          The reciprocal applies to x, not to the logarithm itself.
+
+  - stem: "d/dx of x / (x + 1)"
+    difficulty: medium
+    solution:
+      - "Quotient rule: (f/g)' = (f'g - fg') / g^2."
+      - "f = x with f' = 1; g = x + 1 with g' = 1."
+      - "Numerator: 1*(x+1) - x*1 = 1."
+      - "So the derivative is 1/(x+1)^2."
+    options:
+      - text: "1/(x+1)^2"
+        correct: true
+      - text: "1"
+        misconception: >-
+          The squared denominator stays. The result is 1/(x+1)^2.
+      - text: "-1/(x+1)^2"
+        misconception: >-
+          The numerator works out to +1, since (x+1) - x = 1.
+      - text: "(2x+1)/(x+1)^2"
+        misconception: >-
+          The numerator is f'g - fg', which simplifies to 1, not 2x + 1.
+
+  - stem: "Find the slope of y = x^2 at x = 3."
+    difficulty: medium
+    solution:
+      - "The derivative gives the slope: dy/dx = 2x."
+      - "Substitute x = 3."
+      - "The slope is 6."
+    options:
+      - text: "6"
+        correct: true
+      - text: "9"
+        misconception: >-
+          That is the y-value at x = 3, not the slope. Differentiate
+          first, then substitute.
+      - text: "2x"
+        misconception: >-
+          The slope at a specific point is a number. Substitute x = 3
+          into 2x to get it.
+      - text: "3"
+        misconception: >-
+          That is the x-value. The slope is 2 times 3, which is 6.
+
+  - stem: "d/dx of cos(3x)"
+    difficulty: medium
+    solution:
+      - "The derivative of cos(u) is -sin(u)."
+      - "Chain rule: multiply by the derivative of the inside, which is 3."
+      - "So the derivative is -3sin(3x)."
+    options:
+      - text: "-3sin(3x)"
+        correct: true
+      - text: "-sin(3x)"
+        misconception: >-
+          The chain rule contributes a factor of 3 from the inside
+          function.
+      - text: "3sin(3x)"
+        misconception: >-
+          Differentiating cosine introduces a minus sign.
+      - text: "-3sin(x)"
+        misconception: >-
+          The inside function stays 3x. Only a factor of 3 comes out
+          front.
+
+  # --- hard: combined rules, implicit and logarithmic differentiation ---
+
+  - stem: "d/dx of (x^2 * ln(x)) / (x + 1)"
+    difficulty: hard
+    solution:
+      - "Use the quotient rule with f = x^2*ln(x) and g = x + 1."
+      - "f needs the product rule: f' = 2x*ln(x) + x^2*(1/x)."
+      - "That simplifies to f' = 2x*ln(x) + x."
+      - "g' = 1."
+      - "Apply (f'g - fg') / g^2."
+      - "Derivative = ((2x*ln(x) + x)(x+1) - x^2*ln(x)) / (x+1)^2."
+    options:
+      - text: "((2x*ln(x) + x)(x+1) - x^2*ln(x)) / (x+1)^2"
+        correct: true
+      - text: "(2x*ln(x)*(x+1) - x^2*ln(x)) / (x+1)^2"
+        misconception: >-
+          f' also contains the term x, which comes from x^2 times the
+          derivative of ln(x).
+      - text: "2x*ln(x) + x"
+        misconception: >-
+          That is only f'. The quotient rule still has to be applied to
+          handle the denominator x + 1.
+      - text: "((2x*ln(x) + x)(x+1) + x^2*ln(x)) / (x+1)^2"
+        misconception: >-
+          The quotient rule subtracts the second term. Only the product
+          rule adds.
+
+  - stem: "Given x^2 + y^2 = 25, find dy/dx by implicit differentiation."
+    difficulty: hard
+    solution:
+      - "Differentiate both sides with respect to x."
+      - "d/dx of x^2 = 2x."
+      - "d/dx of y^2 = 2y*(dy/dx), by the chain rule, since y depends on x."
+      - "So 2x + 2y*(dy/dx) = 0."
+      - "Solve: dy/dx = -x/y."
+    options:
+      - text: "-x/y"
+        correct: true
+      - text: "x/y"
+        misconception: >-
+          The sign is lost. Moving 2x across the equals sign makes it
+          negative.
+      - text: "-2x"
+        misconception: >-
+          The y^2 term contributes 2y*(dy/dx), which must be divided
+          through to isolate dy/dx.
+      - text: "0"
+        misconception: >-
+          The right-hand side is constant, but y still varies with x, so
+          dy/dx is not zero.
+
+  - stem: "Find the critical points of f(x) = x^3 - 3x."
+    difficulty: hard
+    solution:
+      - "Critical points occur where the derivative is zero."
+      - "f'(x) = 3x^2 - 3."
+      - "Set 3x^2 - 3 = 0, so x^2 = 1."
+      - "x = 1 and x = -1."
+    options:
+      - text: "x = 1 and x = -1"
+        correct: true
+      - text: "x = 0"
+        misconception: >-
+          That solves 3x^2 = 0. The derivative is 3x^2 - 3, so setting
+          it to zero gives x^2 = 1.
+      - text: "x = 3 and x = -3"
+        misconception: >-
+          Dividing 3x^2 = 3 gives x^2 = 1, not x^2 = 9.
+      - text: "x = 0, sqrt(3), -sqrt(3)"
+        misconception: >-
+          Those are the zeros of f(x) itself. Critical points come from
+          the zeros of f'(x).
+
+  - stem: "d/dx of x^x"
+    difficulty: hard
+    solution:
+      - "Neither the power rule nor the exponential rule applies, since x
+         is both the base and the exponent."
+      - "Let y = x^x and take logs: ln(y) = x*ln(x)."
+      - "Differentiate both sides: (1/y)*(dy/dx) = ln(x) + 1."
+      - "Multiply through by y: dy/dx = x^x*(ln(x) + 1)."
+    options:
+      - text: "x^x*(ln(x) + 1)"
+        correct: true
+      - text: "x*x^(x-1)"
+        misconception: >-
+          The power rule needs a constant exponent. Here the exponent is
+          x itself.
+      - text: "x^x*ln(x)"
+        misconception: >-
+          Differentiating x*ln(x) by the product rule gives ln(x) + 1,
+          not ln(x) on its own.
+      - text: "x^x"
+        misconception: >-
+          That is the rule for e^x. A base of x requires logarithmic
+          differentiation.
+
+  - stem: "Find the equation of the tangent line to y = x^2 at x = 2."
+    difficulty: hard
+    solution:
+      - "The point of tangency is (2, 4), since 2^2 = 4."
+      - "The slope is y' = 2x, which equals 4 at x = 2."
+      - "Point-slope form: y - 4 = 4(x - 2)."
+      - "Expand and simplify: y = 4x - 4."
+    options:
+      - text: "y = 4x - 4"
+        correct: true
+      - text: "y = 4x + 4"
+        misconception: >-
+          Expanding 4(x - 2) gives 4x - 8; adding 4 leaves -4, not +4.
+      - text: "y = 2x - 4"
+        misconception: >-
+          The slope is y' evaluated at x = 2, which is 4, not 2.
+      - text: "y = 4x"
+        misconception: >-
+          The line must pass through (2, 4), but y = 4x gives y = 8
+          there.
+
+  - stem: "d/dx of e^(2x) * cos(x)"
+    difficulty: hard
+    solution:
+      - "Product rule with f = e^(2x) and g = cos(x)."
+      - "f' = 2e^(2x), by the chain rule."
+      - "g' = -sin(x)."
+      - "f'g + fg' = 2e^(2x)cos(x) - e^(2x)sin(x)."
+    options:
+      - text: "2e^(2x)cos(x) - e^(2x)sin(x)"
+        correct: true
+      - text: "e^(2x)cos(x) - e^(2x)sin(x)"
+        misconception: >-
+          The chain rule gives f' = 2e^(2x). That factor of 2 must not
+          be dropped.
+      - text: "2e^(2x)cos(x) + e^(2x)sin(x)"
+        misconception: >-
+          The derivative of cos(x) is -sin(x), so the second term is
+          negative.
+      - text: "-2e^(2x)sin(x)"
+        misconception: >-
+          That multiplies the two derivatives together. The product rule
+          adds two separate terms.

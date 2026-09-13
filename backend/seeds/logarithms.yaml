@@ -1,0 +1,435 @@
+# Logarithms & Exponentials — 18 questions, 6 easy / 6 medium / 6 hard.
+#
+# `difficulty` is the authored label only. The seed script derives the
+# starting difficulty_b from it via LABEL_TO_INITIAL_B in app/db/models.py,
+# and real answers move it from there.
+#
+# `solution` becomes rows in question_steps, numbered from the list order.
+# `misconception` on a wrong option names the specific error that choice
+# encodes, and is shown before the worked solution. The correct option must
+# not carry one — ck_no_misconception_on_correct enforces that.
+#
+# Both fields reveal the answer, so neither may be sent to the frontend
+# before an answer is submitted.
+
+topic:
+  slug: logarithms
+  name: Logarithms & Exponentials
+  description: >-
+    Evaluating logarithms, applying logarithm and exponent rules, and
+    solving exponential and logarithmic equations.
+
+questions:
+  # --- easy: direct evaluation and single-step rules ---
+
+  - stem: "log_2(8) = ?"
+    difficulty: easy
+    solution:
+      - "A logarithm asks: what exponent turns the base into the argument?"
+      - "Here that is: 2 raised to what power gives 8?"
+      - "2^3 = 8"
+      - "So log_2(8) = 3."
+    options:
+      - text: "4"
+        misconception: >-
+          You used 2 x 4 = 8. A logarithm asks for an exponent, not a
+          factor. The power of 2 that gives 8 is 3, because 2^3 = 8.
+      - text: "3"
+        correct: true
+      - text: "6"
+        misconception: >-
+          That is double the correct exponent. Check it directly:
+          2^6 = 64, not 8.
+      - text: "1/3"
+        misconception: >-
+          You answered log_8(2) instead. The base is 2 and the argument
+          is 8, not the other way round.
+
+  - stem: "log_10(1000) = ?"
+    difficulty: easy
+    solution:
+      - "Ask: 10 raised to what power gives 1000?"
+      - "1000 = 10 x 10 x 10 = 10^3"
+      - "So log_10(1000) = 3."
+    options:
+      - text: "3"
+        correct: true
+      - text: "2"
+        misconception: >-
+          Count the factors of 10 again: 1000 = 10 x 10 x 10. That is
+          three tens, so the exponent is 3.
+      - text: "100"
+        misconception: >-
+          You divided 1000 by 10. A logarithm returns the exponent, not
+          the result of a division.
+      - text: "10"
+        misconception: >-
+          That is the base. The answer is the power the base is raised
+          to, which is 3.
+
+  - stem: "log_5(1) = ?"
+    difficulty: easy
+    solution:
+      - "Ask: 5 raised to what power gives 1?"
+      - "Any non-zero base raised to the power 0 equals 1."
+      - "5^0 = 1, so log_5(1) = 0."
+    options:
+      - text: "5"
+        misconception: >-
+          That is the base. A logarithm returns the exponent applied to
+          the base, not the base itself.
+      - text: "1"
+        misconception: >-
+          5^1 = 5, not 1. The exponent that produces 1 is 0.
+      - text: "0"
+        correct: true
+      - text: "undefined"
+        misconception: >-
+          log_5(0) is undefined, but log_5(1) is not. Every base raised
+          to the power 0 gives 1.
+
+  - stem: "Simplify:  2^5 * 2^3"
+    difficulty: easy
+    solution:
+      - "Multiplying powers of the same base adds the exponents."
+      - "2^5 * 2^3 = 2^(5+3)"
+      - "5 + 3 = 8, so the result is 2^8."
+    options:
+      - text: "2^15"
+        misconception: >-
+          You multiplied the exponents. Multiplying powers of the same
+          base adds them: 5 + 3 = 8.
+      - text: "4^8"
+        misconception: >-
+          The exponents were added correctly, but the base stays 2. This
+          rule never combines the bases.
+      - text: "2^8"
+        correct: true
+      - text: "2^2"
+        misconception: >-
+          Subtracting exponents is the rule for division. Multiplication
+          adds them.
+
+  - stem: "log_3(9) = ?"
+    difficulty: easy
+    solution:
+      - "Ask: 3 raised to what power gives 9?"
+      - "3^2 = 9"
+      - "So log_3(9) = 2."
+    options:
+      - text: "2"
+        correct: true
+      - text: "3"
+        misconception: >-
+          That is the base. The answer is the exponent the base is
+          raised to, which is 2.
+      - text: "1/2"
+        misconception: >-
+          You answered log_9(3) instead. Here the base is 3 and the
+          argument is 9.
+      - text: "27"
+        misconception: >-
+          27 is 3^3. The question asks which exponent gives 9, not what
+          3^3 evaluates to.
+
+  - stem: "Solve for x:  2^x = 32"
+    difficulty: easy
+    solution:
+      - "Write 32 as a power of 2."
+      - "32 = 2 x 2 x 2 x 2 x 2 = 2^5"
+      - "The bases match, so the exponents must match: x = 5."
+    options:
+      - text: "16"
+        misconception: >-
+          You halved 32. Solving for an exponent means writing 32 as a
+          power of 2, not dividing by 2 once.
+      - text: "4"
+        misconception: >-
+          2^4 = 16, not 32. One more doubling is needed.
+      - text: "6"
+        misconception: >-
+          2^6 = 64, which overshoots. 2^5 = 32.
+      - text: "5"
+        correct: true
+
+  # --- medium: log rules, change of base, one-step equations ---
+
+  - stem: "Write as a single logarithm:  log(6) + log(4)"
+    difficulty: medium
+    solution:
+      - "The product rule says log(a) + log(b) = log(a x b)."
+      - "So log(6) + log(4) = log(6 x 4)."
+      - "6 x 4 = 24, giving log(24)."
+    options:
+      - text: "log(24)"
+        correct: true
+      - text: "log(10)"
+        misconception: >-
+          You added 6 and 4. Adding two logarithms multiplies their
+          arguments: log(6 x 4) = log(24).
+      - text: "log(1.5)"
+        misconception: >-
+          Dividing the arguments is the rule for subtracting logarithms.
+          Addition multiplies them.
+      - text: "log(6) * log(4)"
+        misconception: >-
+          A sum of logarithms is not a product of logarithms. The rule
+          moves the operation inside the log: log(6 x 4).
+
+  - stem: "Evaluate:  log_2(40) - log_2(5)"
+    difficulty: medium
+    solution:
+      - "The quotient rule says log(a) - log(b) = log(a / b)."
+      - "log_2(40) - log_2(5) = log_2(40 / 5) = log_2(8)."
+      - "2^3 = 8, so the answer is 3."
+    options:
+      - text: "log_2(35)"
+        misconception: >-
+          You subtracted the arguments. Subtracting logarithms divides
+          them: 40 / 5 = 8.
+      - text: "8"
+        misconception: >-
+          You correctly reached log_2(8) but stopped before evaluating
+          it. log_2(8) = 3.
+      - text: "3"
+        correct: true
+      - text: "log_2(45)"
+        misconception: >-
+          That adds the arguments. Subtracting logarithms corresponds to
+          dividing them.
+
+  - stem: "Simplify:  log_4(64) + log_4(1/4)"
+    difficulty: medium
+    solution:
+      - "log_4(64) = 3, because 4^3 = 64."
+      - "log_4(1/4) = -1, because 4^(-1) = 1/4."
+      - "3 + (-1) = 2."
+    options:
+      - text: "4"
+        misconception: >-
+          You treated log_4(1/4) as +1. A reciprocal gives a negative
+          exponent: 4^(-1) = 1/4, so the term is -1.
+      - text: "2"
+        correct: true
+      - text: "3"
+        misconception: >-
+          That is log_4(64) on its own. The second term contributes -1,
+          bringing the total to 2.
+      - text: "-3"
+        misconception: >-
+          The first term is positive: 4^3 = 64 gives +3. Only the
+          second term is negative.
+
+  - stem: "Solve for x:  3^(x+1) = 81"
+    difficulty: medium
+    solution:
+      - "Write 81 as a power of 3: 81 = 3^4."
+      - "Now 3^(x+1) = 3^4, so the exponents match: x + 1 = 4."
+      - "Subtract 1 from both sides: x = 3."
+    options:
+      - text: "4"
+        misconception: >-
+          You solved for x + 1 and stopped. Subtract 1 to isolate x,
+          giving x = 3.
+      - text: "27"
+        misconception: >-
+          You divided 81 by 3. The exponents must be matched, not the
+          value divided.
+      - text: "3"
+        correct: true
+      - text: "2"
+        misconception: >-
+          You subtracted 1 twice. From x + 1 = 4, one subtraction gives
+          x = 3.
+
+  - stem: "Express log_5(20) in terms of base-10 logarithms."
+    difficulty: medium
+    solution:
+      - "Change of base: log_b(a) = log(a) / log(b)."
+      - "Here the base b is 5 and the argument a is 20."
+      - "So log_5(20) = log(20) / log(5)."
+    options:
+      - text: "log(5) / log(20)"
+        misconception: >-
+          The ratio is upside down. The argument goes on top and the
+          base underneath: log(20) / log(5).
+      - text: "log(20) - log(5)"
+        misconception: >-
+          That is the quotient rule, which rewrites log(20/5). Change of
+          base produces a ratio of two separate logarithms.
+      - text: "log(20) / log(5)"
+        correct: true
+      - text: "log(20) * log(5)"
+        misconception: >-
+          Change of base divides one logarithm by the other. It never
+          multiplies them.
+
+  - stem: "Solve for x:  log_3(x) = 4"
+    difficulty: medium
+    solution:
+      - "Rewrite the logarithm in exponential form."
+      - "log_3(x) = 4 means 3^4 = x."
+      - "3^4 = 81, so x = 81."
+    options:
+      - text: "81"
+        correct: true
+      - text: "12"
+        misconception: >-
+          You multiplied 3 by 4. Converting a logarithm to exponential
+          form raises the base to that power: 3^4.
+      - text: "64"
+        misconception: >-
+          That is 4^3. The base is 3 and the exponent is 4, so it is
+          3^4, not 4^3.
+      - text: "7"
+        misconception: >-
+          You added 3 and 4. The exponential form is 3^4.
+
+  # --- hard: extraneous roots, substitution, multi-step models ---
+
+  - stem: "Solve:  log(x) + log(x - 3) = 1"
+    difficulty: hard
+    solution:
+      - "Combine the left side with the product rule: log(x(x-3)) = 1."
+      - "Rewrite in exponential form, base 10: x(x-3) = 10^1 = 10."
+      - "Expand: x^2 - 3x - 10 = 0."
+      - "Factor: (x-5)(x+2) = 0, so the candidates are x = 5 and x = -2."
+      - "Check the domain: x = -2 makes log(-2) undefined, so reject it."
+      - "Answer: x = 5."
+    options:
+      - text: "x = 5 or x = -2"
+        misconception: >-
+          Both values solve the quadratic, but x = -2 makes log(-2)
+          undefined. Candidates from a log equation must always be
+          checked against the domain.
+      - text: "x = -2"
+        misconception: >-
+          This is the root that has to be rejected, since log(-2) is
+          undefined. The valid solution is x = 5.
+      - text: "x = 5"
+        correct: true
+      - text: "x = 10"
+        misconception: >-
+          You set x - 3 = 10 without combining the logarithms first.
+          Apply the product rule, then convert to exponential form.
+
+  - stem: "Solve:  log_2(x) + log_2(x - 2) = 3"
+    difficulty: hard
+    solution:
+      - "Combine with the product rule: log_2(x(x-2)) = 3."
+      - "Rewrite in exponential form: x(x-2) = 2^3 = 8."
+      - "Expand: x^2 - 2x - 8 = 0."
+      - "Factor: (x-4)(x+2) = 0, so the candidates are x = 4 and x = -2."
+      - "Reject x = -2, since log_2(-2) is undefined."
+      - "Answer: x = 4."
+    options:
+      - text: "x = 4"
+        correct: true
+      - text: "x = 4 or x = -2"
+        misconception: >-
+          x = -2 solves the quadratic but not the original equation,
+          because log_2(-2) is undefined.
+      - text: "x = 8"
+        misconception: >-
+          8 is the value of x(x-2), not of x. Solve the quadratic after
+          reaching that step.
+      - text: "x = -2"
+        misconception: >-
+          This is the root to discard. Substituting it asks for the
+          logarithm of a negative number.
+
+  - stem: "Solve for x:  5^(2x) = 3^(x + 1)"
+    difficulty: hard
+    solution:
+      - "Take the natural log of both sides: 2x*ln(5) = (x+1)*ln(3)."
+      - "Expand the right side: 2x*ln(5) = x*ln(3) + ln(3)."
+      - "Collect the x terms: 2x*ln(5) - x*ln(3) = ln(3)."
+      - "Factor out x: x(2*ln(5) - ln(3)) = ln(3)."
+      - "Divide: x = ln(3) / (2*ln(5) - ln(3))."
+    options:
+      - text: "ln(3) / (ln(5) - ln(3))"
+        misconception: >-
+          The left exponent is 2x, so taking logs gives 2x*ln(5). That
+          factor of 2 has to be carried through.
+      - text: "ln(3) / (2*ln(5) - ln(3))"
+        correct: true
+      - text: "ln(3) / (2*ln(5))"
+        misconception: >-
+          The right side is 3^(x+1), which also contains x. Its x term
+          must be collected with the left side before dividing.
+      - text: "(ln(3) - ln(5)) / 2"
+        misconception: >-
+          Logarithms were subtracted before x was isolated. Expand
+          first, then collect the x terms and factor.
+
+  - stem: "Solve:  2^(2x) - 5*2^x + 4 = 0"
+    difficulty: hard
+    solution:
+      - "Notice that 2^(2x) = (2^x)^2, so substitute u = 2^x."
+      - "The equation becomes u^2 - 5u + 4 = 0."
+      - "Factor: (u-1)(u-4) = 0, so u = 1 or u = 4."
+      - "Substitute back. 2^x = 1 gives x = 0."
+      - "2^x = 4 gives x = 2."
+      - "Answer: x = 0 or x = 2."
+    options:
+      - text: "x = 1 or x = 4"
+        misconception: >-
+          Those are the values of u, not x. You still have to solve
+          2^x = 1 and 2^x = 4 to recover x.
+      - text: "x = 2"
+        misconception: >-
+          That is only one of the roots. 2^x = 1 gives a second
+          solution, x = 0.
+      - text: "x = 0 or x = 2"
+        correct: true
+      - text: "x = 0"
+        misconception: >-
+          That is only one of the roots. 2^x = 4 gives a second
+          solution, x = 2.
+
+  - stem: >-
+      A bacterial culture doubles every 6 hours. Starting from 500 cells,
+      how many cells are there after 30 hours?
+    difficulty: hard
+    solution:
+      - "Count the doublings: 30 hours / 6 hours per doubling = 5."
+      - "Each doubling multiplies by 2, so the growth factor is 2^5 = 32."
+      - "500 x 32 = 16000 cells."
+    options:
+      - text: "15000"
+        misconception: >-
+          You multiplied 500 by 30. Growth here is repeated doubling,
+          not multiplication by the number of hours.
+      - text: "8000"
+        misconception: >-
+          That is 4 doublings (500 x 16). There are 30 / 6 = 5
+          doublings.
+      - text: "32000"
+        misconception: >-
+          That is 6 doublings. 30 / 6 = 5, so the factor is 2^5 = 32.
+      - text: "16000"
+        correct: true
+
+  - stem: >-
+      Given log_b(2) = 0.43 and log_b(3) = 0.68, find log_b(12).
+    difficulty: hard
+    solution:
+      - "Factor 12 using the numbers you were given: 12 = 4 x 3 = 2^2 x 3."
+      - "Product rule: log_b(12) = log_b(2^2) + log_b(3)."
+      - "Power rule: log_b(2^2) = 2 x log_b(2) = 2 x 0.43 = 0.86."
+      - "Add the parts: 0.86 + 0.68 = 1.54."
+    options:
+      - text: "1.54"
+        correct: true
+      - text: "1.11"
+        misconception: >-
+          That is log_b(6), from 2 x 3. But 12 = 2^2 x 3, so log_b(2)
+          is needed twice.
+      - text: "0.29"
+        misconception: >-
+          You multiplied the two logarithms. The product rule adds
+          them.
+      - text: "2.22"
+        misconception: >-
+          Both terms were doubled. Only log_b(2) doubles, because 12
+          contains 2^2 but just one factor of 3.

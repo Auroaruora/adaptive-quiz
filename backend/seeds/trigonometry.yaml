@@ -1,0 +1,433 @@
+# Trigonometry — 18 questions, 6 easy / 6 medium / 6 hard.
+#
+# `difficulty` is the authored label only. The seed script derives the
+# starting difficulty_b from it via LABEL_TO_INITIAL_B in app/db/models.py.
+#
+# `solution` becomes rows in question_steps, numbered from the list order.
+# `misconception` on a wrong option names the specific error that choice
+# encodes. The correct option must not carry one.
+#
+# Option order in this file is authoring order only — the seed script
+# reshuffles it deterministically from a hash of the stem.
+
+topic:
+  slug: trigonometry
+  name: Trigonometry
+  description: >-
+    Unit-circle values, the Pythagorean and double-angle identities,
+    graph transformations, and solving trigonometric equations.
+
+questions:
+  # --- easy: unit circle values and definitions ---
+
+  - stem: "sin(pi/6) = ?"
+    difficulty: easy
+    solution:
+      - "pi/6 radians is 30 degrees."
+      - "In a 30-60-90 triangle, the side opposite the 30 degree angle is
+         half the hypotenuse."
+      - "So sin(pi/6) = 1/2."
+    options:
+      - text: "1/2"
+        correct: true
+      - text: "sqrt(3)/2"
+        misconception: >-
+          That is cos(pi/6). Sine is the opposite side over the
+          hypotenuse, which at 30 degrees gives 1/2.
+      - text: "sqrt(2)/2"
+        misconception: >-
+          That is sin(pi/4), the 45 degree value. pi/6 is 30 degrees.
+      - text: "1/sqrt(3)"
+        misconception: >-
+          That is tan(pi/6). The question asks for sine, not tangent.
+
+  - stem: "cos(0) = ?"
+    difficulty: easy
+    solution:
+      - "On the unit circle, the point at angle 0 is (1, 0)."
+      - "Cosine is the x-coordinate of that point."
+      - "So cos(0) = 1."
+    options:
+      - text: "0"
+        misconception: >-
+          That is sin(0). Cosine is the x-coordinate on the unit circle,
+          which is 1 at angle 0.
+      - text: "1"
+        correct: true
+      - text: "undefined"
+        misconception: >-
+          cos(0) is perfectly well defined. It is tan(pi/2) that is
+          undefined.
+      - text: "-1"
+        misconception: >-
+          cos(pi) = -1. At angle 0 the x-coordinate is +1.
+
+  - stem: "tan(pi/4) = ?"
+    difficulty: easy
+    solution:
+      - "tan(x) = sin(x) / cos(x)."
+      - "At pi/4, sine and cosine are both sqrt(2)/2."
+      - "Their ratio is 1, so tan(pi/4) = 1."
+    options:
+      - text: "sqrt(2)/2"
+        misconception: >-
+          That is sin(pi/4) or cos(pi/4) on its own. Tangent is their
+          ratio, which is 1.
+      - text: "0"
+        misconception: >-
+          tan(0) = 0. At pi/4 sine and cosine are equal and non-zero, so
+          the ratio is 1.
+      - text: "1"
+        correct: true
+      - text: "sqrt(2)"
+        misconception: >-
+          That adds the two values. Tangent divides sine by cosine.
+
+  - stem: "Simplify:  sin^2(x) + cos^2(x)"
+    difficulty: easy
+    solution:
+      - "This is the Pythagorean identity."
+      - "For every angle x, sin^2(x) + cos^2(x) = 1."
+    options:
+      - text: "1"
+        correct: true
+      - text: "0"
+        misconception: >-
+          The identity gives 1. Both squares are non-negative and sum to
+          exactly 1, never 0.
+      - text: "sin(2x)"
+        misconception: >-
+          That is a double-angle formula. The sum of the two squares is
+          the Pythagorean identity, which equals 1.
+      - text: "2"
+        misconception: >-
+          Each term is at most 1, and together they sum to exactly 1.
+
+  - stem: "Convert 180 degrees to radians."
+    difficulty: easy
+    solution:
+      - "A full circle is 360 degrees, or 2*pi radians."
+      - "180 degrees is half a circle."
+      - "Half of 2*pi is pi."
+    options:
+      - text: "pi/2"
+        misconception: >-
+          pi/2 is 90 degrees, a quarter turn. 180 degrees is half a
+          turn, which is pi.
+      - text: "pi"
+        correct: true
+      - text: "2*pi"
+        misconception: >-
+          2*pi is a full 360 degree turn. 180 degrees is half of that.
+      - text: "180/pi"
+        misconception: >-
+          That converts the wrong way. Degrees become radians by
+          multiplying by pi/180.
+
+  - stem: "In a right triangle, which ratio defines cos(x)?"
+    difficulty: easy
+    solution:
+      - "SOH-CAH-TOA gives the three basic ratios."
+      - "CAH: cosine is adjacent over hypotenuse."
+    options:
+      - text: "opposite / hypotenuse"
+        misconception: >-
+          That is sine. Cosine uses the adjacent side, not the opposite
+          one.
+      - text: "opposite / adjacent"
+        misconception: >-
+          That is tangent. Cosine compares the adjacent side to the
+          hypotenuse.
+      - text: "adjacent / hypotenuse"
+        correct: true
+      - text: "hypotenuse / adjacent"
+        misconception: >-
+          That is secant, the reciprocal of cosine. Cosine puts the
+          adjacent side on top.
+
+  # --- medium: reference angles, identities, periods ---
+
+  - stem: "sin(2*pi/3) = ?"
+    difficulty: medium
+    solution:
+      - "2*pi/3 is 120 degrees, which lies in the second quadrant."
+      - "Sine is positive in the second quadrant."
+      - "The reference angle is 180 - 120 = 60 degrees, or pi/3."
+      - "sin(pi/3) = sqrt(3)/2, so sin(2*pi/3) = sqrt(3)/2."
+    options:
+      - text: "sqrt(3)/2"
+        correct: true
+      - text: "-sqrt(3)/2"
+        misconception: >-
+          Sine is positive in the second quadrant. Cosine and tangent
+          are the negative ones there.
+      - text: "1/2"
+        misconception: >-
+          That is the sine of a 30 degree reference angle. Here the
+          reference angle is 60 degrees.
+      - text: "-1/2"
+        misconception: >-
+          Both the sign and the reference angle are wrong. Sine is
+          positive at 120 degrees, with reference angle 60 degrees.
+
+  - stem: >-
+      If sin(x) = 3/5 and x is in the first quadrant, find cos(x).
+    difficulty: medium
+    solution:
+      - "Use sin^2(x) + cos^2(x) = 1."
+      - "cos^2(x) = 1 - (3/5)^2 = 1 - 9/25 = 16/25."
+      - "So cos(x) = +/- 4/5."
+      - "In the first quadrant cosine is positive, so cos(x) = 4/5."
+    options:
+      - text: "4/5"
+        correct: true
+      - text: "-4/5"
+        misconception: >-
+          That sign belongs to the second quadrant. In the first
+          quadrant cosine is positive.
+      - text: "5/3"
+        misconception: >-
+          You inverted the given ratio. Use the Pythagorean identity
+          rather than flipping sine.
+      - text: "2/5"
+        misconception: >-
+          This comes from subtracting 3/5 from 1. The identity works
+          with squares: 1 - 9/25 = 16/25.
+
+  - stem: "Simplify:  (1 - cos^2(x)) / sin(x)"
+    difficulty: medium
+    solution:
+      - "From the Pythagorean identity, 1 - cos^2(x) = sin^2(x)."
+      - "So the expression becomes sin^2(x) / sin(x)."
+      - "Cancelling one factor leaves sin(x)."
+    options:
+      - text: "sin(x)"
+        correct: true
+      - text: "cos(x)"
+        misconception: >-
+          The numerator simplifies to sin^2(x), not cos^2(x). Dividing
+          by sin(x) leaves sin(x).
+      - text: "1"
+        misconception: >-
+          That would need the numerator to be sin(x). It is sin^2(x), so
+          one factor survives the division.
+      - text: "tan(x)"
+        misconception: >-
+          Tangent needs a cosine in the denominator. Here the
+          denominator is sin(x).
+
+  - stem: "Solve for x in [0, 2pi):  2cos(x) = 1"
+    difficulty: medium
+    solution:
+      - "Divide both sides by 2: cos(x) = 1/2."
+      - "Cosine equals 1/2 at the reference angle pi/3."
+      - "Cosine is positive in quadrants I and IV."
+      - "So x = pi/3 and x = 2pi - pi/3 = 5pi/3."
+    options:
+      - text: "x = pi/3 only"
+        misconception: >-
+          Cosine is positive in two quadrants. The fourth-quadrant
+          solution 5pi/3 is also in range.
+      - text: "x = pi/3, 5pi/3"
+        correct: true
+      - text: "x = pi/3, 2pi/3"
+        misconception: >-
+          2pi/3 sits in the second quadrant, where cosine is negative.
+          The other solution is 5pi/3.
+      - text: "x = pi/6, 11pi/6"
+        misconception: >-
+          Those are where cosine equals sqrt(3)/2. Cosine is 1/2 at
+          pi/3.
+
+  - stem: "The period of y = sin(3x) is:"
+    difficulty: medium
+    solution:
+      - "For y = sin(bx), the period is 2*pi / b."
+      - "Here b = 3."
+      - "So the period is 2*pi/3."
+    options:
+      - text: "2*pi/3"
+        correct: true
+      - text: "2*pi"
+        misconception: >-
+          That is the period of sin(x). The coefficient 3 compresses the
+          graph, making the period shorter.
+      - text: "6*pi"
+        misconception: >-
+          You multiplied by 3 instead of dividing. A larger coefficient
+          shortens the period.
+      - text: "3"
+        misconception: >-
+          The period is measured in radians and comes from 2*pi divided
+          by the coefficient.
+
+  - stem: >-
+      Given cos(x) = -4/5 and x is in the second quadrant, find tan(x).
+    difficulty: medium
+    solution:
+      - "From the identity, sin^2(x) = 1 - 16/25 = 9/25."
+      - "In the second quadrant sine is positive, so sin(x) = 3/5."
+      - "tan(x) = sin(x) / cos(x) = (3/5) / (-4/5)."
+      - "That simplifies to -3/4."
+    options:
+      - text: "-3/4"
+        correct: true
+      - text: "3/4"
+        misconception: >-
+          Tangent is negative in the second quadrant, because sine is
+          positive there while cosine is negative.
+      - text: "-4/3"
+        misconception: >-
+          You inverted the ratio. Tangent is sine over cosine, not
+          cosine over sine.
+      - text: "-5/4"
+        misconception: >-
+          That uses the hypotenuse in place of the sine value.
+          sin(x) = 3/5, giving tan(x) = -3/4.
+
+  # --- hard: substitution, double angles, exact values ---
+
+  - stem: "Solve for x in [0, 2pi):  2sin^2(x) - sin(x) - 1 = 0"
+    difficulty: hard
+    solution:
+      - "Substitute u = sin(x): 2u^2 - u - 1 = 0."
+      - "Factor: (2u + 1)(u - 1) = 0, so u = -1/2 or u = 1."
+      - "sin(x) = 1 gives x = pi/2."
+      - "sin(x) = -1/2 is negative, so x lies in quadrants III and IV."
+      - "Those give x = 7pi/6 and x = 11pi/6."
+      - "Answer: x = pi/2, 7pi/6, 11pi/6."
+    options:
+      - text: "x = pi/2, 7pi/6, 11pi/6"
+        correct: true
+      - text: "x = -1/2, 1"
+        misconception: >-
+          Those are the values of sin(x), not of x. You still have to
+          solve sin(x) = -1/2 and sin(x) = 1.
+      - text: "x = pi/2 only"
+        misconception: >-
+          The root sin(x) = -1/2 also has solutions in range, at 7pi/6
+          and 11pi/6.
+      - text: "x = pi/2, pi/6, 5pi/6"
+        misconception: >-
+          pi/6 and 5pi/6 are where sine is +1/2. The second root here is
+          -1/2, which puts x below the axis.
+
+  - stem: >-
+      Using sin(2x) = 2sin(x)cos(x), find sin(2x) when sin(x) = 3/5 and x
+      is in the first quadrant.
+    difficulty: hard
+    solution:
+      - "In the first quadrant, cos(x) = 4/5 by the Pythagorean identity."
+      - "sin(2x) = 2 sin(x) cos(x)."
+      - "= 2 * (3/5) * (4/5)"
+      - "= 24/25."
+    options:
+      - text: "24/25"
+        correct: true
+      - text: "12/25"
+        misconception: >-
+          The factor of 2 was dropped. The formula is 2 sin(x) cos(x),
+          not sin(x) cos(x).
+      - text: "6/5"
+        misconception: >-
+          That is 2 sin(x) alone. The cosine factor is still needed.
+      - text: "-24/25"
+        misconception: >-
+          In the first quadrant both sine and cosine are positive, so
+          the product is positive.
+
+  - stem: "Simplify:  (1 + tan^2(x)) * cos^2(x)"
+    difficulty: hard
+    solution:
+      - "Use the identity 1 + tan^2(x) = sec^2(x)."
+      - "sec^2(x) = 1 / cos^2(x)."
+      - "So the expression is cos^2(x) / cos^2(x)."
+      - "That equals 1."
+    options:
+      - text: "1"
+        correct: true
+      - text: "cos^2(x)"
+        misconception: >-
+          1 + tan^2(x) is sec^2(x), which cancels cos^2(x) completely
+          rather than leaving it behind.
+      - text: "sin^2(x)"
+        misconception: >-
+          No sine survives the simplification. sec^2(x) times cos^2(x)
+          is exactly 1.
+      - text: "sec^2(x)"
+        misconception: >-
+          That is only the first factor. Multiplying by cos^2(x) reduces
+          it to 1.
+
+  - stem: "Solve for x in [0, 2pi):  sin(2x) = sin(x)"
+    difficulty: hard
+    solution:
+      - "Rewrite with the double angle: 2 sin(x) cos(x) = sin(x)."
+      - "Move everything to one side: 2 sin(x) cos(x) - sin(x) = 0."
+      - "Factor out sin(x): sin(x)(2 cos(x) - 1) = 0."
+      - "sin(x) = 0 gives x = 0 and x = pi."
+      - "cos(x) = 1/2 gives x = pi/3 and x = 5pi/3."
+      - "Answer: x = 0, pi/3, pi, 5pi/3."
+    options:
+      - text: "x = 0, pi/3, pi, 5pi/3"
+        correct: true
+      - text: "x = pi/3, 5pi/3"
+        misconception: >-
+          Dividing both sides by sin(x) throws away the roots where
+          sin(x) = 0. Factor instead of dividing.
+      - text: "x = 0, pi"
+        misconception: >-
+          That is only the sin(x) = 0 branch. The factor 2cos(x) - 1
+          contributes two more solutions.
+      - text: "x = 0, pi/3"
+        misconception: >-
+          Each branch has two solutions in [0, 2pi), so there are four
+          altogether.
+
+  - stem: >-
+      For y = 2sin(x - pi/4) + 3, give the amplitude, phase shift and
+      vertical shift.
+    difficulty: hard
+    solution:
+      - "Compare with the general form y = A sin(x - C) + D."
+      - "A = 2, so the amplitude is 2."
+      - "C = pi/4, giving a shift of pi/4 to the right."
+      - "D = 3, giving a shift of 3 upward."
+    options:
+      - text: "amplitude 2, shift pi/4 right, up 3"
+        correct: true
+      - text: "amplitude 2, shift pi/4 left, up 3"
+        misconception: >-
+          The form is sin(x - C). Subtracting inside the function shifts
+          the graph right, not left.
+      - text: "amplitude 3, shift pi/4 right, up 2"
+        misconception: >-
+          Amplitude and vertical shift are swapped. The coefficient in
+          front of sine is the amplitude.
+      - text: "amplitude 4, shift pi/4 right, up 3"
+        misconception: >-
+          The amplitude is the coefficient itself, 2, not twice it.
+
+  - stem: "Find the exact value of cos(pi/12)."
+    difficulty: hard
+    solution:
+      - "Write pi/12 as a difference of known angles: pi/4 - pi/6."
+      - "Use cos(A - B) = cos(A)cos(B) + sin(A)sin(B)."
+      - "= (sqrt(2)/2)(sqrt(3)/2) + (sqrt(2)/2)(1/2)"
+      - "= sqrt(6)/4 + sqrt(2)/4"
+      - "= (sqrt(6) + sqrt(2)) / 4."
+    options:
+      - text: "(sqrt(6) + sqrt(2)) / 4"
+        correct: true
+      - text: "(sqrt(6) - sqrt(2)) / 4"
+        misconception: >-
+          That is sin(pi/12). The cosine difference formula adds the two
+          products rather than subtracting them.
+      - text: "(sqrt(3) + 1) / 4"
+        misconception: >-
+          The sqrt(2)/2 factors were dropped. Each of the two products
+          contains one.
+      - text: "sqrt(2)/2 - 1/2"
+        misconception: >-
+          That subtracts trig values directly. The difference formula
+          applies to the angles, not by subtracting their cosines.
