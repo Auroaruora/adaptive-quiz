@@ -1,4 +1,4 @@
-import { AbilityDelta } from "./AbilityDelta";
+import { AbilityGain } from "./AbilityGain";
 import { MisconceptionNote } from "./MisconceptionNote";
 import { SolutionSteps } from "./SolutionSteps";
 import type { Feedback } from "@/lib/types";
@@ -30,7 +30,7 @@ export function FeedbackPanel({ feedback, onNext }: FeedbackPanelProps) {
         >
           {isCorrect ? "Correct" : "Not quite"}
         </h2>
-        <AbilityDelta
+        <AbilityGain
           thetaBefore={feedback.thetaBefore}
           thetaAfter={feedback.thetaAfter}
         />

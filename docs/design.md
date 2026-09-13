@@ -161,6 +161,15 @@ movement, and — when wrong — the specific misconception behind that choice.
 explanation is the thing a reviewer will not have seen in another portfolio
 project. It should read as help, never as a scold.
 
+**Ability movement is shown only when it rises.** A falling number after a
+wrong answer is discouraging, and it teaches nothing that the misconception
+explanation does not already say better. The estimate still falls — the
+interface simply declines to narrate it. This is the same reasoning that makes
+incorrect orange rather than red.
+
+Never invert this into a fake rise. Showing nothing is honest; showing an
+increase that did not happen is not.
+
 ### Topic complete
 Reached when the API returns `complete: true`. A summary of the run and a
 route back to the dashboard.
