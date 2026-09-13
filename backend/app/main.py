@@ -2,14 +2,26 @@
 
 from fastapi import FastAPI
 
-app = FastAPI()
+from app.routers import progress, quiz, users
+
+app = FastAPI(
+    title="Adaptive Quiz",
+    description=(
+        "Serves questions matched to a student's estimated ability, using "
+        "a Rasch model that updates after every answer."
+    ),
+)
+
+app.include_router(users.router)
+app.include_router(quiz.router)
+app.include_router(progress.router)
 
 
-@app.get("/")
-def read_root() -> dict[str, str]:
-    """Return a simple hello-world payload.
+@app.get("/health", tags=["meta"])
+async def health() -> dict[str, str]:
+    """Reports that the service is up.
 
     Returns:
-        A greeting message.
+        A fixed payload, so a load balancer has something to poll.
     """
-    return {"message": "Hello, world!"}
+    return {"status": "ok"}
