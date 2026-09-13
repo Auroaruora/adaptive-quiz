@@ -38,7 +38,7 @@ export function FeedbackPanel({ feedback, onNext }: FeedbackPanelProps) {
 
       {misconception && <MisconceptionNote>{misconception}</MisconceptionNote>}
 
-      <SolutionSteps steps={solution} defaultOpen={!isCorrect} />
+      <SolutionSteps steps={solution} />
 
       {onNext && (
         <button

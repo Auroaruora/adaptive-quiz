@@ -170,6 +170,11 @@ incorrect orange rather than red.
 Never invert this into a fake rise. Showing nothing is honest; showing an
 increase that did not happen is not.
 
+**The worked solution starts collapsed, including after a wrong answer.** The
+misconception above it already says what went wrong; unfolding a full method
+underneath turns a short correction into a wall of text. A student who wants
+the method asks for it.
+
 ### Topic complete
 Reached when the API returns `complete: true`. A summary of the run and a
 route back to the dashboard.

@@ -1,26 +1,22 @@
 interface SolutionStepsProps {
   steps: string[];
-  /** Collapsed by default after a correct answer. */
-  defaultOpen?: boolean;
 }
 
 /**
  * The worked solution, one line per step.
  *
- * Collapsible because a student who answered correctly does not need the
- * method spelled out, but may still want to check their reasoning. After a
- * wrong answer it opens by default, following the misconception.
+ * Always collapsed to begin with, including after a wrong answer. The
+ * misconception above already says what went wrong, and unfolding a full
+ * method underneath it turns a short correction into a wall of text. A
+ * student who wants the method asks for it.
  *
  * Set in sans, not the math family. Steps read as sentences that happen to
  * contain expressions — "Rewrite the logarithm in exponential form." is
  * prose, and italic serif makes it look like a quotation.
  */
-export function SolutionSteps({
-  steps,
-  defaultOpen = true,
-}: SolutionStepsProps) {
+export function SolutionSteps({ steps }: SolutionStepsProps) {
   return (
-    <details open={defaultOpen} className="group">
+    <details className="group">
       <summary className="text-label text-ink-muted hover:text-ink cursor-pointer list-none font-medium">
         <span className="group-open:hidden">Show the steps</span>
         <span className="hidden group-open:inline">Hide the steps</span>
