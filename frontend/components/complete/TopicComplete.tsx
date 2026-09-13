@@ -1,4 +1,5 @@
 import { AbilitySparkline } from "@/components/dashboard/AbilitySparkline";
+import { accuracy, accuracyLevel } from "@/lib/ability";
 import type { TopicProgress } from "@/lib/types";
 
 interface TopicCompleteProps {
@@ -40,6 +41,7 @@ function Stat({ label, value, numeric = true }: StatProps) {
  */
 export function TopicComplete({ topic, onBack }: TopicCompleteProps) {
   const { summary } = topic;
+  const percent = accuracy(summary);
 
   return (
     <div className="mx-auto flex w-full max-w-[720px] flex-col gap-8">
@@ -64,8 +66,15 @@ export function TopicComplete({ topic, onBack }: TopicCompleteProps) {
       <section className="border-line bg-surface shadow-raised flex flex-col gap-6 rounded-lg border p-6">
         <div className="flex flex-wrap gap-8">
           <Stat label="Attempts taken" value={String(summary.answered)} />
-          <Stat label="Final ability" value={`θ ${summary.theta.toFixed(2)}`} />
-          <Stat label="Level" value={summary.level} numeric={false} />
+          <Stat
+            label="Accuracy"
+            value={percent === null ? "—" : `${percent}%`}
+          />
+          <Stat
+            label="Level"
+            value={percent === null ? "—" : accuracyLevel(percent)}
+            numeric={false}
+          />
         </div>
 
         <div className="flex flex-col gap-2">

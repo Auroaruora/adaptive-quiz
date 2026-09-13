@@ -17,6 +17,11 @@ export const question: Question = {
   id: 200,
   topicSlug: "logarithms",
   stem: "Solve for x:  log_3(x) = 4",
+  tags: [
+    { slug: "log-equation", name: "Log equation" },
+    { slug: "log-definition", name: "Log definition" },
+    { slug: "logarithmic", name: "Logarithmic" },
+  ],
   options: [
     { id: 424, text: "64", position: 1 },
     { id: 425, text: "81", position: 2 },

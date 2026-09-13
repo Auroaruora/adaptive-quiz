@@ -2,6 +2,7 @@ import { FeedbackPanel } from "./FeedbackPanel";
 import { MasteryBar } from "./MasteryBar";
 import { OptionList } from "./OptionList";
 import { QuestionStem } from "./QuestionStem";
+import { Eyebrow } from "@/components/ui/Eyebrow";
 import type { Feedback, Question } from "@/lib/types";
 
 interface QuizScreenProps {
@@ -48,7 +49,18 @@ export function QuizScreen({
         <MasteryBar mastered={mastered} total={total} />
       </header>
 
-      <QuestionStem>{question.stem}</QuestionStem>
+      <div className="flex flex-col gap-3">
+        {/*
+          One tag, the first, which the API orders rarest first — so this
+          is the most specific concept the question exercises. Showing all
+          of them would bury that under "polynomial", which is true of
+          nearly every question in the topic.
+        */}
+        {question.tags[0] && (
+          <Eyebrow tone="faint">{question.tags[0].name}</Eyebrow>
+        )}
+        <QuestionStem>{question.stem}</QuestionStem>
+      </div>
 
       <OptionList
         options={question.options}

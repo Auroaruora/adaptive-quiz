@@ -15,10 +15,18 @@ export interface Option {
   position: number;
 }
 
+/** A concept a question exercises. */
+export interface Tag {
+  slug: string;
+  name: string;
+}
+
 export interface Question {
   id: number;
   topicSlug: string;
   stem: string;
+  /** Rarest first, so showing only the first shows the most specific. */
+  tags: Tag[];
   options: Option[];
 }
 

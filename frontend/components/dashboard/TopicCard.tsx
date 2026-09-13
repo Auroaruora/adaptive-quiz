@@ -1,7 +1,7 @@
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { SegmentedBar } from "@/components/ui/SegmentedBar";
 import { WeakSpots } from "./WeakSpots";
-import { abilityScore } from "@/lib/ability";
+import { accuracy, accuracyLevel } from "@/lib/ability";
 import type { TopicProgress } from "@/lib/types";
 
 interface TopicCardProps {
@@ -27,7 +27,7 @@ interface TopicCardProps {
 export function TopicCard({ topic, blurb, onStart }: TopicCardProps) {
   const { summary } = topic;
   const placed = summary.answered > 0;
-  const score = abilityScore(summary.theta);
+  const score = accuracy(summary);
 
   return (
     <article className="border-line bg-surface shadow-raised flex flex-col gap-6 rounded-lg border p-6">
@@ -44,12 +44,15 @@ export function TopicCard({ topic, blurb, onStart }: TopicCardProps) {
       </header>
 
       <div className="flex flex-col gap-3">
-        <Eyebrow tone="faint">Ability</Eyebrow>
-        {placed ? (
+        <Eyebrow tone="faint">Accuracy</Eyebrow>
+        {placed && score !== null ? (
           <div className="flex items-baseline gap-3">
-            <span className="text-h2 text-ink font-mono">{score}</span>
+            <span className="text-h2 text-ink font-mono">{score}%</span>
             <span className="text-label text-ink-muted capitalize">
-              {summary.level}
+              {accuracyLevel(score)}
+            </span>
+            <span className="text-label text-ink-faint">
+              {summary.correct} of {summary.answered}
             </span>
           </div>
         ) : (

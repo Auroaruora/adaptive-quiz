@@ -1,38 +1,37 @@
 /**
  * Presenting ability to students.
  *
- * Theta stays the model's unit and the API's. This maps it onto 0–100 for
- * display only — a student cannot act on "θ 1.18", but they can act on
- * "65, up 24 this week". Nothing here feeds back into the model.
+ * Ability shown is the share of questions answered correctly in a topic,
+ * not the model's theta. A student can act on "you get two in three
+ * right"; they cannot act on a logit, and theta describes how the app
+ * picks questions rather than how well they are doing.
+ *
+ * Theta still exists and still breaks ties in selection. It is simply not
+ * what gets shown.
  */
 
-import type { SeriesPoint } from "./types";
-
-/** The range the update rule clamps theta to. */
-const MIN = -4;
-const MAX = 4;
-
-export function abilityScore(theta: number): number {
-  const clamped = Math.min(MAX, Math.max(MIN, theta));
-  return Math.round(((clamped - MIN) / (MAX - MIN)) * 100);
-}
+import type { AbilityLevel, TopicSummary } from "./types";
 
 /**
- * Change in score over a trailing window.
+ * Percentage of answers that were correct.
  *
- * Returns null when there is nothing to compare against — a first session
- * has no "this week", and inventing a rise from a single point would be a
- * lie dressed as encouragement.
+ * Null when nothing has been answered — a topic with no attempts has no
+ * accuracy, and rendering it as 0 would read as a score of nothing rather
+ * than an absence of data.
  */
-export function scoreChange(series: SeriesPoint[], days = 7): number | null {
-  if (series.length < 2) return null;
+export function accuracy(summary: TopicSummary): number | null {
+  if (summary.answered === 0) return null;
+  return Math.round((summary.correct / summary.answered) * 100);
+}
 
-  const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
-  const withinWindow = series.filter((p) => Date.parse(p.at) >= cutoff);
-  if (withinWindow.length < 2) return null;
+/** Thresholds are inclusive lower bounds, in percent. */
+const BANDS: ReadonlyArray<readonly [number, AbilityLevel]> = [
+  [90, "advanced"],
+  [70, "proficient"],
+  [50, "progressing"],
+  [0, "developing"],
+];
 
-  const first = withinWindow[0];
-  const last = withinWindow[withinWindow.length - 1];
-  const change = abilityScore(last.theta) - abilityScore(first.theta);
-  return change === 0 ? null : change;
+export function accuracyLevel(percent: number): AbilityLevel {
+  return BANDS.find(([floor]) => percent >= floor)![1];
 }
