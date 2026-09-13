@@ -23,6 +23,7 @@ export default function DashboardPreview() {
       <Dashboard
         progress={fresh ? emptyProgress : populatedProgress}
         onStart={() => {}}
+        onPractise={() => {}}
         onBeginPlacement={() => {}}
         onSkipPlacement={() => {}}
       />

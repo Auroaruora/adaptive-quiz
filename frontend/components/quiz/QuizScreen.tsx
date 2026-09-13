@@ -2,7 +2,7 @@ import { FeedbackPanel } from "./FeedbackPanel";
 import { MasteryBar } from "./MasteryBar";
 import { OptionList } from "./OptionList";
 import { QuestionStem } from "./QuestionStem";
-import { Eyebrow } from "@/components/ui/Eyebrow";
+import { TagChips } from "./TagChips";
 import type { Feedback, Question } from "@/lib/types";
 
 interface QuizScreenProps {
@@ -16,6 +16,10 @@ interface QuizScreenProps {
   onSelect: (optionId: number) => void;
   onSubmit: () => void;
   onNext: () => void;
+  /** Slug of the concept being drilled, if practice is narrowed. */
+  practising?: string | null;
+  onPractise?: (slug: string) => void;
+  onClearPractice?: () => void;
 }
 
 /**
@@ -39,26 +43,42 @@ export function QuizScreen({
   onSelect,
   onSubmit,
   onNext,
+  practising = null,
+  onPractise,
+  onClearPractice,
 }: QuizScreenProps) {
   const answered = feedback !== null;
+  const drilled = question.tags.find((t) => t.slug === practising);
 
   return (
     <div className="mx-auto flex w-full max-w-[720px] flex-col gap-8">
       <header className="flex flex-col gap-4">
-        <p className="text-label text-ink-muted">{topicName}</p>
+        <div className="flex flex-wrap items-baseline justify-between gap-3">
+          <p className="text-label text-ink-muted">{topicName}</p>
+          {drilled && onClearPractice && (
+            <p className="text-label text-ink-muted flex items-center gap-3">
+              <span>
+                Practising <span className="text-ink">{drilled.name}</span>
+              </span>
+              <button
+                type="button"
+                onClick={onClearPractice}
+                className="text-accent hover:text-accent-press cursor-pointer underline"
+              >
+                practise everything
+              </button>
+            </p>
+          )}
+        </div>
         <MasteryBar mastered={mastered} total={total} />
       </header>
 
-      <div className="flex flex-col gap-3">
-        {/*
-          One tag, the first, which the API orders rarest first — so this
-          is the most specific concept the question exercises. Showing all
-          of them would bury that under "polynomial", which is true of
-          nearly every question in the topic.
-        */}
-        {question.tags[0] && (
-          <Eyebrow tone="faint">{question.tags[0].name}</Eyebrow>
-        )}
+      <div className="flex flex-col gap-4">
+        <TagChips
+          tags={question.tags}
+          active={practising}
+          onPractise={onPractise}
+        />
         <QuestionStem>{question.stem}</QuestionStem>
       </div>
 

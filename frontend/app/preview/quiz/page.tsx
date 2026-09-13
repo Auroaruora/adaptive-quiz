@@ -9,13 +9,15 @@ import type { Feedback } from "@/lib/types";
 /**
  * The quiz screen, clickable, running on fixtures.
  *
- * Grading is faked against the fixture's correct option so the
- * ask-answer-feedback loop can be walked through before it is wired up.
+ * Grading is faked against the fixture's correct option. Practising a
+ * single tag only changes the banner here, since there is one fixture
+ * question — the filtering itself lives in the API.
  */
 export default function QuizPreview() {
   const [chosenOptionId, setChosenOptionId] = useState<number | null>(null);
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   const [mastered, setMastered] = useState(7);
+  const [practising, setPractising] = useState<string | null>(null);
 
   function submit() {
     if (chosenOptionId === null) return;
@@ -40,6 +42,9 @@ export default function QuizPreview() {
       onSelect={setChosenOptionId}
       onSubmit={submit}
       onNext={next}
+      practising={practising}
+      onPractise={setPractising}
+      onClearPractice={() => setPractising(null)}
     />
   );
 }

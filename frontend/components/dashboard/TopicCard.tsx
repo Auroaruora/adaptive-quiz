@@ -9,6 +9,7 @@ interface TopicCardProps {
   /** One-line description of what the topic covers. */
   blurb: string;
   onStart: (slug: string) => void;
+  onPractise: (topicSlug: string, tagSlug: string) => void;
 }
 
 /**
@@ -24,7 +25,12 @@ interface TopicCardProps {
  * and a student could not act on it. Named concepts with counts are the
  * same information turned into something to do.
  */
-export function TopicCard({ topic, blurb, onStart }: TopicCardProps) {
+export function TopicCard({
+  topic,
+  blurb,
+  onStart,
+  onPractise,
+}: TopicCardProps) {
   const { summary } = topic;
   const placed = summary.answered > 0;
   const score = accuracy(summary);
@@ -63,7 +69,11 @@ export function TopicCard({ topic, blurb, onStart }: TopicCardProps) {
         )}
       </div>
 
-      <WeakSpots spots={topic.weakSpots} started={placed} />
+      <WeakSpots
+        spots={topic.weakSpots}
+        started={placed}
+        onPractise={(tagSlug) => onPractise(topic.slug, tagSlug)}
+      />
 
       <div className="flex flex-col gap-3">
         <div className="flex items-baseline justify-between gap-3">

@@ -12,6 +12,7 @@ const BLURBS: Record<string, string> = {
 interface DashboardProps {
   progress: Progress;
   onStart: (slug: string) => void;
+  onPractise: (topicSlug: string, tagSlug: string) => void;
   onBeginPlacement: () => void;
   onSkipPlacement: () => void;
 }
@@ -26,6 +27,7 @@ interface DashboardProps {
 export function Dashboard({
   progress,
   onStart,
+  onPractise,
   onBeginPlacement,
   onSkipPlacement,
 }: DashboardProps) {
@@ -61,6 +63,7 @@ export function Dashboard({
             topic={topic}
             blurb={BLURBS[topic.slug] ?? ""}
             onStart={onStart}
+            onPractise={onPractise}
           />
         ))}
       </div>
