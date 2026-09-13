@@ -44,9 +44,12 @@ What it should do: $ARGUMENTS
 
 ## Verifying
 
-8. Run `scripts/migrate-check.sh`, which round-trips the migration: upgrade,
-   downgrade one step, upgrade again. If `downgrade()` is broken this is where
-   it shows up, not three revisions later.
+8. Run `scripts/migrate-check.sh --yes`, which round-trips the migration:
+   upgrade, downgrade one step, upgrade again. If `downgrade()` is broken this
+   is where it shows up, not three revisions later. **The downgrade genuinely
+   drops whatever the revision added**, so run this before seeding where you
+   can, and re-run `backend/scripts/seed.py --reset` afterwards where you
+   cannot. Verify the row counts came back.
 9. Inspect the result in MySQL — `SHOW CREATE TABLE <name>` — and confirm the
    types, constraints, and indexes match what `docs/data-model.md` describes.
    Report any difference rather than quietly accepting it.

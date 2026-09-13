@@ -4,9 +4,28 @@
 # then upgrade again. Proves that downgrade() actually reverses upgrade(),
 # which is otherwise only discovered when you need it and it is too late.
 #
+# DESTRUCTIVE. The downgrade step really runs, so anything the newest
+# revision added is dropped and does not come back on the way up. Seeded
+# content in those tables is lost and has to be reloaded. Requires --yes
+# so that is a deliberate choice rather than a surprise.
+#
 # Run from anywhere in the repo. Operates on the database in backend/.env.
 
 set -euo pipefail
+
+usage() {
+  cat >&2 <<'EOF'
+usage: scripts/migrate-check.sh --yes
+
+Round-trips the newest migration (upgrade, downgrade one, upgrade).
+
+The downgrade discards whatever the newest revision added, including any
+seeded rows. Re-run the seed script afterwards. Pass --yes to confirm.
+EOF
+  exit 2
+}
+
+[[ $# -eq 1 && "$1" == "--yes" ]] || usage
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT/backend"
@@ -41,3 +60,6 @@ echo "==> final revision"
 
 echo
 echo "Round trip OK."
+echo "Reminder: the downgrade dropped whatever the newest revision added."
+echo "Re-run 'backend/venv/bin/python backend/scripts/seed.py --reset' to"
+echo "restore seeded content."
