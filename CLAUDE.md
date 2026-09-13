@@ -83,7 +83,7 @@ docker-compose.yml       # local MySQL service
     commit.md           # /commit — split by logical change and commit
     migrate.md          # /migrate — author, apply and verify one migration
 scripts/                # project scripts (journal-tail.sh, etc.)
-  migrate-check.sh      # round-trips a migration: up, down one, up again
+  migrate-check.sh      # round-trips a migration; destructive, needs --yes
 journal/                # daily logs — gitignored, never committed
 docs/
   data-model.md         # schema reference + version history (update with every migration)
@@ -252,7 +252,10 @@ Each phase ends with something runnable/testable before moving to the next.
       answer explains the specific mistake before showing the steps
 - [x] Seed script to load topics and questions into MySQL, with deterministic
       option shuffling so the correct answer is not biased toward one position
-- [ ] Manually verify data via a DB client
+- [x] Manually verify data via a DB client — structure checked with
+      `SHOW CREATE TABLE`, contents checked with integrity queries covering
+      option counts, step ordering, misconception coverage and label-to-b
+      mapping
 
 ### Phase 2 — IRT logic (pure functions, no API yet)
 - [ ] Implement Rasch model probability function + parameter update function in isolation

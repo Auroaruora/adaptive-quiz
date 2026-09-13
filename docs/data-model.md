@@ -331,6 +331,7 @@ attempts
   FOREIGN KEY fk_attempt_option_matches_question (question_id, selected_option_id)
           → question_options(question_id, id)  ON DELETE RESTRICT
   KEY idx_user_topic_time (user_id, topic_id, answered_at)
+  KEY topic_id (topic_id)   -- created by MySQL, not declared; see below
 ```
 
 | Column / rule | Meaning |
@@ -347,6 +348,7 @@ attempts
 | `k_b` | Difficulty step size used for this update. Shrinks as `times_answered` grows, so it differs row to row |
 | `answered_at` | `TIMESTAMP(3)` is millisecond precision. Whole-second precision would tie on rapid answers, making ordering ambiguous |
 | `idx_user_topic_time` | Serves "this student's history in this topic, in order" — the progress chart query |
+| `KEY topic_id` | Not declared in the models. MySQL created it because `topic_id` is the only foreign key here with no existing index leading on it — `idx_user_topic_time` covers `user_id`, and the composite constraint covers `question_id`. Confirmed present via `SHOW CREATE TABLE` |
 
 ### Replaying an update
 
@@ -438,6 +440,22 @@ An index in that role cannot be dropped while the constraint exists.
 explicit `drop_index` calls and drop tables children-first. The same trap will
 appear in any future migration that tries to drop one of these indexes on its
 own — drop or re-point the foreign key first.
+
+---
+
+## Migration gotcha: the round-trip check destroys data
+
+`scripts/migrate-check.sh` runs `upgrade`, `downgrade -1`, `upgrade`. The
+downgrade is real: everything the newest revision added is dropped, and
+re-upgrading brings back an empty structure, not the rows.
+
+Running it against a seeded database wiped all 198 `question_steps` rows and
+every `misconception` value, because those are exactly what v2 added. The
+content survived only because it lives in `backend/seeds/*.yaml`.
+
+The script now requires `--yes` and prints a reminder. Run it before seeding
+where possible; otherwise re-run `scripts/seed.py --reset` afterwards and check
+the row counts came back.
 
 ---
 
