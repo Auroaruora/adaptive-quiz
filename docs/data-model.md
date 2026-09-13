@@ -6,7 +6,7 @@ the set of Alembic revisions under `backend/migrations/versions/` — this
 document explains them, and should be updated in the same commit whenever a
 migration changes the schema.
 
-**Status:** v2, applied to the local database.
+**Status:** v3, applied to the local database.
 
 ---
 
@@ -19,6 +19,7 @@ later changes get a new row rather than edits to an old one.
 | --- | --- | --- | --- |
 | v1 | `9fb0defd7b0c` | 2026-09-13 | Initial schema: `topics`, `questions`, `question_options`, `users`, `user_topic_ability`, `attempts` |
 | v2 | `70818f857b05` | 2026-09-13 | Adds `question_steps` (worked solutions) and `question_options.misconception` (per-distractor feedback) |
+| v3 | `713bf0335de6` | 2026-09-13 | Adds `tags` and `question_tags`, so "something similar" has a meaning |
 
 When a migration changes the schema: bump the version, add a row here naming
 the revision that produced it, and update the affected table sections below —
@@ -370,6 +371,48 @@ outcome was.
 update will not satisfy the raw arithmetic, so a replay check must apply the
 same clamp before comparing, or it reports false failures. This belongs in the
 Phase 2 test suite as an explicit boundary case.
+
+---
+
+## tags and question_tags
+
+What makes two questions alike.
+
+```
+tags
+  id    INT UNSIGNED PK AUTO_INCREMENT
+  slug  VARCHAR(50)  NOT NULL UNIQUE   -- 'product-rule'
+  name  VARCHAR(100) NOT NULL          -- 'Product rule'
+
+question_tags
+  question_id  INT UNSIGNED NOT NULL → questions(id)  ON DELETE CASCADE
+  tag_id       INT UNSIGNED NOT NULL → tags(id)       ON DELETE RESTRICT
+  PRIMARY KEY (question_id, tag_id)
+  KEY idx_tag (tag_id)
+```
+
+A question carries several tags, and two questions are alike to the extent
+theirs overlap — weighted so that sharing a rare tag counts for more than a
+common one. Every derivatives question is about polynomials; only two are
+about the quotient rule, and the second says far more.
+
+**Delete policies differ on purpose.** Deleting a question should take its
+tags with it, so that side cascades. Deleting a *tag* that questions still
+carry would quietly make them less similar to everything, so that side
+restricts.
+
+### The authoring rule
+
+**At least two tags per question, at least one of them broad.**
+
+This is not stylistic. A question whose only tag is unique is exactly as
+isolated as it would be with no tags at all. `d/dx of 7` proved it: tagged
+only `constant-rule`, it had zero neighbours out of eighteen. Retagged
+`constant-rule, power-rule, polynomial` — honest, since differentiating a
+constant is the power rule's edge case — it has plenty.
+
+`scripts/seed.py` rejects a file where any question has fewer than two tags.
+Across the seeded 54, the least-connected question has four neighbours.
 
 ---
 

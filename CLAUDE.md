@@ -100,6 +100,7 @@ backend/
     irt.py              # Rasch probability + update; pure, no DB imports
     selection.py        # next-question choice: unseen, then what you got wrong
     practice.py         # mistake decay and spacing; pure, no DB or clock
+    tags.py             # tag-overlap similarity, IDF-weighted; pure
     schemas.py          # pydantic request/response shapes (camelCase wire)
     services.py         # shared DB reads/writes, keeps routers thin
     routers/
@@ -118,6 +119,7 @@ backend/
     versions/
       20260913_9fb0defd7b0c_initial_schema.py
       20260913_70818f857b05_add_worked_solutions_and_distractor_.py
+      20260913_713bf0335de6_add_question_tags.py
   scripts/
     seed.py             # loads seeds/*.yaml; deterministic option shuffle
   tests/
@@ -125,6 +127,7 @@ backend/
     test_irt.py         # behaviour of the Rasch update rule
     test_selection.py   # selection tiers, pool ranking, spacing and decay
     test_practice.py    # decay and urgency, aged without touching the clock
+    test_tags.py        # similarity weighting and the weakness profile
     test_api.py         # endpoint behaviour, including the secrecy rule
     test_config.py      # URL building and fail-fast on missing credentials
   seeds/                # hand-authored question content, one file per topic

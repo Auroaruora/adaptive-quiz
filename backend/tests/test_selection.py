@@ -13,7 +13,15 @@ import pytest
 from sqlalchemy import select, update
 
 from app import selection
-from app.db.models import Attempt, Question, QuestionOption, Topic, User
+from app.db.models import (
+    Attempt,
+    Question,
+    QuestionOption,
+    QuestionTag,
+    Tag,
+    Topic,
+    User,
+)
 
 
 def _question(difficulty_b: float, question_id: int = 0) -> Question:
@@ -402,3 +410,180 @@ class TestTimeInSelection:
             for seed in range(200)
         }
         assert seen == {older.id, newer.id}
+
+
+class TestTagSteering:
+    """Missing something should bring more of that thing."""
+
+    NOW = datetime.datetime(2026, 9, 13, 12, 0, 0)
+
+    @pytest.fixture
+    async def student(self, session):
+        user = User(display_name="Steered")
+        session.add(user)
+        await session.flush()
+        return user.id
+
+    @pytest.fixture
+    async def derivatives(self, session):
+        return await session.scalar(
+            select(Topic.id).where(Topic.slug == "derivatives")
+        )
+
+    async def _tags_of(self, session, question_id):
+        rows = await session.scalars(
+            select(Tag.slug)
+            .join(QuestionTag, QuestionTag.tag_id == Tag.id)
+            .where(QuestionTag.question_id == question_id)
+        )
+        return set(rows)
+
+    async def _question_with(self, session, topic_id, slug):
+        """The first question in the topic carrying this tag."""
+        return await session.scalar(
+            select(Question)
+            .join(QuestionTag, QuestionTag.question_id == Question.id)
+            .join(Tag, Tag.id == QuestionTag.tag_id)
+            .where(Question.topic_id == topic_id, Tag.slug == slug)
+        )
+
+    async def _miss(self, session, user_id, question):
+        option_id = await session.scalar(
+            select(QuestionOption.id).where(
+                QuestionOption.question_id == question.id,
+                QuestionOption.is_correct.is_(False),
+            )
+        )
+        session.add(
+            Attempt(
+                user_id=user_id,
+                question_id=question.id,
+                topic_id=question.topic_id,
+                selected_option_id=option_id,
+                is_correct=False,
+                theta_before=0.0,
+                theta_after=0.0,
+                b_before=question.difficulty_b,
+                b_after=question.difficulty_b,
+                k_theta=0.3,
+                k_b=0.3,
+                answered_at=self.NOW,
+            )
+        )
+        await session.flush()
+
+    async def test_every_question_has_at_least_one_neighbour(
+        self, session, derivatives
+    ):
+        """The authoring rule, checked against the real seeded data.
+
+        A question whose only tag is unique is as isolated as one with no
+        tags, which is the failure this whole scheme exists to avoid.
+        """
+        questions = list(
+            await session.scalars(
+                select(Question).where(Question.topic_id == derivatives)
+            )
+        )
+        by_id = {q.id: await self._tags_of(session, q.id) for q in questions}
+        for question_id, own in by_id.items():
+            neighbours = sum(
+                1
+                for other, tags_ in by_id.items()
+                if other != question_id and own & tags_
+            )
+            assert neighbours > 0, f"question {question_id} is isolated"
+
+    async def _base_rate(self, session, topic_id, slug):
+        """Share of the topic's questions carrying a tag."""
+        total = len(
+            list(
+                await session.scalars(
+                    select(Question.id).where(Question.topic_id == topic_id)
+                )
+            )
+        )
+        with_tag = len(
+            list(
+                await session.scalars(
+                    select(Question.id)
+                    .join(QuestionTag, QuestionTag.question_id == Question.id)
+                    .join(Tag, Tag.id == QuestionTag.tag_id)
+                    .where(Question.topic_id == topic_id, Tag.slug == slug)
+                )
+            )
+        )
+        return with_tag / total
+
+    async def _serve_many(self, session, student, topic_id, draws=40):
+        served = []
+        for seed in range(draws):
+            chosen = await selection.choose_question(
+                session,
+                user_id=student,
+                topic_id=topic_id,
+                theta=0.0,
+                now=self.NOW,
+                rng=random.Random(seed),
+            )
+            served.append(await self._tags_of(session, chosen.id))
+        return served
+
+    async def test_everything_served_is_related_to_the_mistake(
+        self, session, student, derivatives
+    ):
+        """The strongest statement of steering: nothing unrelated appears."""
+        missed = await self._question_with(session, derivatives, "product-rule")
+        missed_tags = await self._tags_of(session, missed.id)
+        await self._miss(session, student, missed)
+
+        served = await self._serve_many(session, student, derivatives)
+        assert all(missed_tags & t for t in served)
+
+    async def test_the_missed_tag_appears_well_above_its_base_rate(
+        self, session, student, derivatives
+    ):
+        """The behaviour the whole redesign is for.
+
+        Not a majority — only three questions carry the tag and one was
+        just missed, so at most two of the five pool slots can hold it.
+        What matters is that it appears far more often than chance.
+        """
+        missed = await self._question_with(session, derivatives, "product-rule")
+        await self._miss(session, student, missed)
+
+        base = await self._base_rate(session, derivatives, "product-rule")
+        served = await self._serve_many(session, student, derivatives)
+        observed = sum(1 for t in served if "product-rule" in t) / len(served)
+
+        assert observed > base * 2
+
+    async def test_a_student_with_no_mistakes_is_served_by_difficulty(
+        self, session, student, derivatives
+    ):
+        """An empty weakness profile must not disturb the old behaviour."""
+        chosen = [
+            await selection.choose_question(
+                session,
+                user_id=student,
+                topic_id=derivatives,
+                theta=1.0,
+                now=self.NOW,
+                rng=random.Random(seed),
+            )
+            for seed in range(20)
+        ]
+        assert all(q.difficulty_b >= 0.0 for q in chosen)
+
+    async def test_steering_follows_whichever_tag_was_missed(
+        self, session, student, derivatives
+    ):
+        """Not hard-coded to one tag: miss the chain rule, get chain rule."""
+        missed = await self._question_with(session, derivatives, "chain-rule")
+        await self._miss(session, student, missed)
+
+        base = await self._base_rate(session, derivatives, "chain-rule")
+        served = await self._serve_many(session, student, derivatives)
+        observed = sum(1 for t in served if "chain-rule" in t) / len(served)
+
+        assert observed > base * 2
