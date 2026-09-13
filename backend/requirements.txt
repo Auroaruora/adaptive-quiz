@@ -1,2 +1,8 @@
 fastapi
 uvicorn[standard]
+sqlalchemy[asyncio]
+alembic
+aiomysql
+pymysql
+cryptography
+python-dotenv
