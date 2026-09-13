@@ -8,7 +8,9 @@ their difference matters: a student meets a question they have an even
 chance of answering when theta equals b.
 """
 
+import bisect
 import dataclasses
+import enum
 import math
 
 #: Step size for ability. Held constant rather than decayed, because a
@@ -31,6 +33,42 @@ ITEM_RATE_HALF_LIFE = 10.0
 #: invite runaway drift on thin data.
 PARAMETER_MIN = -4.0
 PARAMETER_MAX = 4.0
+
+
+class AbilityLevel(enum.StrEnum):
+    """A readable band for an ability estimate.
+
+    A raw logit means nothing to a student, so theta is also reported as
+    one of these. The bands are presentation, not model: nothing in the
+    update rule reads them.
+    """
+
+    DEVELOPING = "developing"
+    PROGRESSING = "progressing"
+    PROFICIENT = "proficient"
+    ADVANCED = "advanced"
+
+
+#: Upper bounds separating the ability bands, in logits.
+_LEVEL_THRESHOLDS = (-0.5, 0.5, 1.5)
+_LEVELS = (
+    AbilityLevel.DEVELOPING,
+    AbilityLevel.PROGRESSING,
+    AbilityLevel.PROFICIENT,
+    AbilityLevel.ADVANCED,
+)
+
+
+def ability_level(theta: float) -> AbilityLevel:
+    """Maps an ability estimate onto a readable band.
+
+    Args:
+        theta: Student ability, in logits.
+
+    Returns:
+        The band containing that ability.
+    """
+    return _LEVELS[bisect.bisect_right(_LEVEL_THRESHOLDS, theta)]
 
 
 @dataclasses.dataclass(frozen=True)
