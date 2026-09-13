@@ -47,9 +47,7 @@ class TestCreateUser:
     """POST /users."""
 
     async def test_creates_a_student(self, client):
-        response = await client.post(
-            "/users", json={"displayName": "Ada"}
-        )
+        response = await client.post("/users", json={"displayName": "Ada"})
         assert response.status_code == 201
         body = response.json()
         assert body["displayName"] == "Ada"
@@ -61,9 +59,7 @@ class TestCreateUser:
         assert response.status_code == 422
 
     async def test_rejects_a_name_over_the_column_limit(self, client):
-        response = await client.post(
-            "/users", json={"displayName": "x" * 51}
-        )
+        response = await client.post("/users", json={"displayName": "x" * 51})
         assert response.status_code == 422
 
 
@@ -196,9 +192,9 @@ class TestSubmitAnswer:
         ).json()["question"]
         option = await _wrong_option_id(session, served["id"])
 
-        feedback = (
-            await _answer(client, user_id, served["id"], option)
-        )["feedback"]
+        feedback = (await _answer(client, user_id, served["id"], option))[
+            "feedback"
+        ]
 
         assert feedback["isCorrect"] is False
         assert feedback["thetaAfter"] < feedback["thetaBefore"]
@@ -289,6 +285,72 @@ class TestSubmitAnswer:
         assert response.status_code == 404
 
 
+class TestTopicCompletion:
+    """Working a topic to completion through the API."""
+
+    async def test_answering_everything_correctly_completes_the_topic(
+        self, client, user_id, topic_id, session
+    ):
+        """The full loop: 18 questions, then a completion signal."""
+        served = (
+            await client.get(
+                f"/next-question?userId={user_id}&topicId={topic_id}"
+            )
+        ).json()
+
+        answered = 0
+        while served["question"] is not None:
+            qid = served["question"]["id"]
+            option = await _correct_option_id(session, qid)
+            served = (await _answer(client, user_id, qid, option))["next"]
+            answered += 1
+            assert answered <= 18, "served more questions than exist"
+
+        assert answered == 18
+        assert served["complete"] is True
+        assert served["question"] is None
+
+    async def test_a_wrong_answer_keeps_the_topic_incomplete(
+        self, client, user_id, topic_id, session
+    ):
+        """One wrong answer must be revisited before the topic closes."""
+        served = (
+            await client.get(
+                f"/next-question?userId={user_id}&topicId={topic_id}"
+            )
+        ).json()
+
+        first = True
+        seen = 0
+        while served["question"] is not None and seen < 18:
+            qid = served["question"]["id"]
+            option = (
+                await _wrong_option_id(session, qid)
+                if first
+                else await _correct_option_id(session, qid)
+            )
+            first = False
+            served = (await _answer(client, user_id, qid, option))["next"]
+            seen += 1
+
+        assert served["complete"] is False
+        assert served["question"] is not None
+
+        progress = (await client.get(f"/progress/{user_id}")).json()
+        logs = next(t for t in progress["topics"] if t["slug"] == "logarithms")
+        assert logs["summary"]["mastered"] == 17
+        assert logs["summary"]["total"] == 18
+
+
+class TestHealth:
+    """GET /health."""
+
+    async def test_reports_ok(self, client):
+        response = await client.get("/health")
+        assert response.status_code == 200
+        assert response.json() == {"status": "ok"}
+
+
 class TestProgress:
     """GET /progress/{user_id}."""
 
@@ -319,9 +381,7 @@ class TestProgress:
         await _answer(client, user_id, served["id"], option)
 
         body = (await client.get(f"/progress/{user_id}")).json()
-        logs = next(
-            t for t in body["topics"] if t["slug"] == "logarithms"
-        )
+        logs = next(t for t in body["topics"] if t["slug"] == "logarithms")
         assert logs["summary"]["answered"] == 1
         assert logs["summary"]["correct"] == 1
         assert logs["summary"]["mastered"] == 1
@@ -340,9 +400,7 @@ class TestProgress:
         await _answer(client, user_id, served["id"], option)
 
         body = (await client.get(f"/progress/{user_id}")).json()
-        logs = next(
-            t for t in body["topics"] if t["slug"] == "logarithms"
-        )
+        logs = next(t for t in body["topics"] if t["slug"] == "logarithms")
         assert logs["summary"]["answered"] == 1
         assert logs["summary"]["correct"] == 0
         assert logs["summary"]["mastered"] == 0

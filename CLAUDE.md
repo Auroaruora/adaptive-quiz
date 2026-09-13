@@ -119,7 +119,9 @@ backend/
   tests/
     conftest.py         # rollback-per-test fixtures against real MySQL
     test_irt.py         # behaviour of the Rasch update rule
+    test_selection.py   # the three selection tiers and the pool ranking
     test_api.py         # endpoint behaviour, including the secrecy rule
+    test_config.py      # URL building and fail-fast on missing credentials
   seeds/                # hand-authored question content, one file per topic
     logarithms.yaml
     trigonometry.yaml
@@ -127,6 +129,7 @@ backend/
   requirements.txt
   requirements-dev.txt  # requirements.txt plus pytest, pytest-asyncio, httpx
   pytest.ini            # asyncio auto mode
+  .coveragerc           # greenlet tracing, without which coverage misreads
   ruff.toml             # ruff config (Google style, line-length 80)
 frontend/
   app/

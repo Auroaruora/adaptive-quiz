@@ -75,6 +75,46 @@ class TestItemLearningRate:
         assert irt.item_learning_rate(10**9) > 0.0
 
 
+class TestAbilityLevel:
+    """Mapping an ability estimate onto a readable band."""
+
+    @pytest.mark.parametrize(
+        "theta, expected",
+        [
+            (-4.0, "developing"),
+            (-1.0, "developing"),
+            (-0.51, "developing"),
+            (-0.5, "progressing"),
+            (0.0, "progressing"),
+            (0.49, "progressing"),
+            (0.5, "proficient"),
+            (1.0, "proficient"),
+            (1.49, "proficient"),
+            (1.5, "advanced"),
+            (4.0, "advanced"),
+        ],
+    )
+    def test_bands_and_their_exact_boundaries(self, theta, expected):
+        """Pins which side of each threshold belongs to which band."""
+        assert irt.ability_level(theta) == expected
+
+    def test_covers_the_whole_clamped_range(self):
+        step = 0.01
+        n = int((irt.PARAMETER_MAX - irt.PARAMETER_MIN) / step)
+        levels = {
+            irt.ability_level(irt.PARAMETER_MIN + i * step)
+            for i in range(n + 1)
+        }
+        assert levels == set(irt.AbilityLevel)
+
+    def test_never_decreases_as_ability_rises(self):
+        order = list(irt.AbilityLevel)
+        seen = [
+            order.index(irt.ability_level(t / 10.0)) for t in range(-40, 41)
+        ]
+        assert seen == sorted(seen)
+
+
 class TestApplyAnswerDirection:
     """Which way each parameter moves."""
 
