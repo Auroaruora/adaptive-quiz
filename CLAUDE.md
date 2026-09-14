@@ -179,6 +179,7 @@ frontend/
       TopicComplete.tsx # reached when the API reports complete: true
   lib/
     types.ts            # TS mirrors of the API payloads
+    api.ts              # typed wrappers for the five endpoints; throws ApiError
     ability.ts          # theta -> 0-100 score, presentation only
     fixtures.ts         # sample payloads for building screens without a backend
   postcss.config.mjs    # @tailwindcss/postcss
@@ -363,7 +364,9 @@ Each phase ends with something runnable/testable before moving to the next.
       into practising a single concept
 - [x] CORS on the backend, origins from `CORS_ORIGINS` with the dev server
       as the default; only `GET`, `POST` and `Content-Type`, no credentials
-- [ ] A data layer: typed fetch wrappers for the five endpoints
+- [x] A data layer: typed fetch wrappers for the five endpoints in
+      `lib/api.ts`, base URL from `NEXT_PUBLIC_API_URL`, non-2xx thrown
+      as `ApiError` with the status so a stale user id is catchable
 - [ ] Real routes. Only `/preview/*` exists; `/` is still the Next starter
       page, and there is no route a student could use
 - [ ] User identity — `docs/design.md` calls for a name prompt on first
