@@ -1,3 +1,14 @@
+# Local development runs `docker compose up -d` for MySQL alone and the
+# backend and frontend natively (.claude/launch.json), so those two sit
+# behind the `app` profile and stay out of the default set. The whole
+# stack, as it will run on the server:
+#
+#   docker compose --profile app up --build -d
+#
+# Credentials come from the repo-root .env, as before. MYSQL_HOST is set
+# here rather than read from .env because inside the network the database
+# is reached by service name, not by 127.0.0.1.
+
 services:
   mysql:
     image: mysql:8.4
@@ -11,6 +22,45 @@ services:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
+    # Over TCP on purpose: while MySQL initialises a fresh volume it runs a
+    # temporary socket-only server, and a socket ping would pass too early.
+    # `mysqladmin ping` exits 0 whenever the server answers, even with
+    # "access denied", so no credentials are needed.
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "--silent", "-h", "127.0.0.1"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  backend:
+    build: ./backend
+    profiles: ["app"]
+    restart: unless-stopped
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      # Empty falls back to the app's default, the local dev server.
+      CORS_ORIGINS: ${CORS_ORIGINS:-}
+    ports:
+      - "8000:8000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        # Baked into the bundle at build time; what the browser will call.
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+    profiles: ["app"]
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
 
 volumes:
   mysql_data:
