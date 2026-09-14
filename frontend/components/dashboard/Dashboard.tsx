@@ -2,13 +2,6 @@ import { PlacementPanel } from "./PlacementPanel";
 import { TopicCard } from "./TopicCard";
 import type { Progress } from "@/lib/types";
 
-/** One-line descriptions of what each topic covers. */
-const BLURBS: Record<string, string> = {
-  derivatives: "Power, product, chain",
-  logarithms: "Laws, change of base",
-  trigonometry: "Identities, unit circle",
-};
-
 interface DashboardProps {
   progress: Progress;
   /** The student chose to skip placement; the cards are the way in. */
@@ -66,7 +59,6 @@ export function Dashboard({
           <TopicCard
             key={topic.slug}
             topic={topic}
-            blurb={BLURBS[topic.slug] ?? ""}
             onStart={onStart}
             onPractise={onPractise}
           />

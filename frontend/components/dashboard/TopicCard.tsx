@@ -5,8 +5,6 @@ import type { TopicProgress } from "@/lib/types";
 
 interface TopicCardProps {
   topic: TopicProgress;
-  /** One-line description of what the topic covers. */
-  blurb: string;
   onStart: (slug: string) => void;
   onPractise: (topicSlug: string, tagSlug: string) => void;
 }
@@ -24,12 +22,7 @@ interface TopicCardProps {
  * for, and a student could not act on it. Named concepts with their own
  * rings are the same information turned into something to do.
  */
-export function TopicCard({
-  topic,
-  blurb,
-  onStart,
-  onPractise,
-}: TopicCardProps) {
+export function TopicCard({ topic, onStart, onPractise }: TopicCardProps) {
   const { summary } = topic;
   const placed = summary.answered > 0;
   const counts = {
@@ -40,16 +33,13 @@ export function TopicCard({
 
   return (
     <article className="border-line bg-surface shadow-raised flex flex-col gap-6 rounded-lg border p-6">
-      <header className="flex flex-col gap-1">
-        <div className="flex items-start justify-between gap-3">
-          <h2 className="text-h3 text-ink min-h-[2lh]">{topic.name}</h2>
-          {!placed && (
-            <span className="border-line text-ink-faint text-mono-xs shrink-0 rounded-full border px-3 py-1 font-mono">
-              Not placed
-            </span>
-          )}
-        </div>
-        <p className="text-body text-ink-muted">{blurb}</p>
+      <header className="flex items-start justify-between gap-3">
+        <h2 className="text-h3 text-ink min-h-[2lh]">{topic.name}</h2>
+        {!placed && (
+          <span className="border-line text-ink-faint text-mono-xs shrink-0 rounded-full border px-3 py-1 font-mono">
+            Not placed
+          </span>
+        )}
       </header>
 
       <div className="flex flex-col gap-3">
