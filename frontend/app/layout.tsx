@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { IBM_Plex_Mono, Instrument_Sans, Newsreader } from "next/font/google";
 import "./globals.css";
 
+import { AppShell } from "@/components/shell/AppShell";
+import { UserProvider } from "@/components/shell/UserProvider";
+
 const sans = Instrument_Sans({
   variable: "--font-instrument-sans",
   subsets: ["latin"],
@@ -34,7 +37,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       className={`${sans.variable} ${mono.variable} ${math.variable}`}
     >
-      <body>{children}</body>
+      <body>
+        <UserProvider>
+          <AppShell>{children}</AppShell>
+        </UserProvider>
+      </body>
     </html>
   );
 }
