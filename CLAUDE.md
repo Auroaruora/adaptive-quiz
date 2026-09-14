@@ -91,6 +91,7 @@ docs/
   irt-model.md          # the Rasch model, learning rates, and their trade-offs
   design.md             # visual system; tokens are the only permitted values
   api.md                # endpoint contract, secrecy rule, selection tiers
+  deploy.md             # AWS record: account, security groups, RDS, EC2; no secrets
 backend/
   Dockerfile            # two-stage python:3.12-slim; ships alembic and the seed script
   .dockerignore         # venv, tests and tooling config stay out of the image
@@ -429,7 +430,11 @@ Sessions — every sitting is a fixed run, then a board:
   - Verified locally: both images build, all three containers report
     healthy, `/topics` reads from MySQL by service name, the home page
     serves, `alembic current` runs from the image
-- [ ] Deploy MySQL via RDS
+- [x] Deploy MySQL via RDS — done by hand over the CLI, recorded with
+      reasons in `docs/deploy.md`: two security groups (web, and db that
+      admits 3306 only from web), MySQL 8.4.11 on `db.t4g.micro`, 20 GB
+      encrypted gp3, single AZ, no public access, one day of backups.
+      First connection, migrations and seed wait for the EC2 instance
 - [ ] Deploy backend + frontend to AWS (EC2)
 - [ ] Confirm live demo works end-to-end
 
