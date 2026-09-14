@@ -9,6 +9,21 @@
 export type AbilityLevel =
   "developing" | "progressing" | "proficient" | "advanced";
 
+export interface Topic {
+  id: number;
+  slug: string;
+  name: string;
+  description: string;
+  /** Active questions only, so a retired one stops being advertised. */
+  questionCount: number;
+}
+
+export interface User {
+  id: number;
+  displayName: string;
+  createdAt: string;
+}
+
 export interface Option {
   id: number;
   text: string;
@@ -35,6 +50,15 @@ export interface Ability {
   level: AbilityLevel;
 }
 
+/**
+ * What both quiz endpoints return. The question is null exactly when the
+ * pool is complete, and the union makes that a checked branch rather than a
+ * convention: narrowing on `complete` is the only way to reach the question.
+ */
+export type NextQuestion =
+  | { question: Question; ability: Ability; complete: false }
+  | { question: null; ability: Ability; complete: true };
+
 export interface Feedback {
   isCorrect: boolean;
   correctOptionId: number;
@@ -43,6 +67,12 @@ export interface Feedback {
   solution: string[];
   thetaBefore: number;
   thetaAfter: number;
+}
+
+/** One round trip: the grade for this answer and the question after it. */
+export interface AnswerResult {
+  feedback: Feedback;
+  next: NextQuestion;
 }
 
 /** How one option should render once an answer has been submitted. */
