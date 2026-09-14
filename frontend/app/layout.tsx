@@ -26,7 +26,7 @@ const math = Newsreader({
 });
 
 export const metadata: Metadata = {
-  title: "Adaptive Quiz",
+  title: "Gradient",
   description:
     "Practice calculus with questions matched to your current ability.",
 };

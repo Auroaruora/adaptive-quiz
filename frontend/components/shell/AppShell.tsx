@@ -36,7 +36,7 @@ export function AppShell({ children }: AppShellProps) {
         <div className="mx-auto flex max-w-[1200px] flex-wrap items-center gap-x-8 gap-y-2 px-8 py-4">
           <Link href="/" className="flex shrink-0 items-center gap-2">
             <span aria-hidden="true" className="bg-accent h-3 w-3 rounded-sm" />
-            <span className="text-title text-ink font-medium">Asymptote</span>
+            <span className="text-title text-ink font-medium">Gradient</span>
           </Link>
 
           <nav className="flex grow flex-wrap items-center gap-1">
