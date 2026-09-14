@@ -162,6 +162,7 @@ frontend/
       Eyebrow.tsx       # mono uppercase label above a heading
       SegmentedBar.tsx  # countable progress, one segment per question
       Panel.tsx         # surface or the one deep panel per screen
+      Ring.tsx          # correct / wrong / unseen as one ring, plus its legend
       Notice.tsx        # one line of loading or error where a screen would be
     quiz/
       OptionButton.tsx  # one option; idle/selected/correct/incorrect/muted
@@ -184,7 +185,7 @@ frontend/
       DashboardPage.tsx # fetches progress; a stale user id re-prompts
       TopicCard.tsx
       PlacementPanel.tsx# the dark panel, shown until placed or skipped
-      WeakSpots.tsx     # concepts being got wrong; replaced the theta chart
+      WeakSpots.tsx     # concepts being got wrong, each with a ring
     placement/
       Placement.tsx     # a three-source session, four per topic
     complete/

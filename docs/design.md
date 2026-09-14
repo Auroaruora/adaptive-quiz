@@ -279,6 +279,21 @@ Phase 7 README carries the IRT story instead.
 **Never show 0% for an untouched topic.** No attempts means no accuracy, not
 an accuracy of nothing.
 
+### Rings on the dashboard
+
+The topic card and each weak spot show a **ring in three parts**: green for
+questions last answered right, orange for last answered wrong, grey for not
+yet practised, always in that order from the top so position carries the
+meaning as well as colour. The parts are counted in questions, never
+attempts, so they always add up to the whole. The topic ring has correct
+out of total in the middle, "8 / 18", and a legend in words beside it.
+
+The accuracy percentage and its level still appear on the topic complete
+screen, where a run is being summed up. On the dashboard, where the
+question is "what is left to do", the ring answers it and a percentage did
+not: a count of misses that used to sit beside each weak spot read as a
+score, and nobody could say of what.
+
 ---
 
 ## Rules
