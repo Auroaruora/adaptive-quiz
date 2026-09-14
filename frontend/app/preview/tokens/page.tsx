@@ -1,6 +1,12 @@
 import { OptionButton } from "@/components/quiz/OptionButton";
+import { TagChips } from "@/components/quiz/TagChips";
 import { Eyebrow } from "@/components/ui/Eyebrow";
+import { Notice } from "@/components/ui/Notice";
+import { Ring, RingLegend, ringLabel } from "@/components/ui/Ring";
 import { SegmentedBar } from "@/components/ui/SegmentedBar";
+
+const RING_EXAMPLE = { total: 18, correct: 8, wrong: 3 };
+const SPOT_EXAMPLE = { total: 5, correct: 2, wrong: 1 };
 
 /*
  * Every class here is written out in full rather than built from a
@@ -232,13 +238,72 @@ export default function TokensPage() {
           </div>
 
           <div className="border-line flex flex-col gap-4 border-t pt-6">
+            <p className="text-label text-ink-muted">
+              Session bar: answered segments take their outcome, the current one
+              is ink
+            </p>
             <SegmentedBar
-              total={12}
-              filled={3}
-              current={3}
-              label="Quiz progress example"
+              total={10}
+              filled={4}
+              current={4}
+              outcomes={["correct", "incorrect", "correct", "correct"]}
+              label="Session bar example"
             />
-            <SegmentedBar total={18} filled={11} label="Mastery example" />
+            <SegmentedBar
+              total={3}
+              filled={3}
+              outcomes={["incorrect", "correct", "incorrect"]}
+              label="Short pool example"
+            />
+          </div>
+
+          <div className="border-line flex flex-col gap-4 border-t pt-6">
+            <p className="text-label text-ink-muted">
+              Ring: correct, wrong, not yet, from the top
+            </p>
+            <div className="flex flex-wrap items-center gap-6">
+              <Ring
+                {...RING_EXAMPLE}
+                size={72}
+                label={ringLabel("Topic", RING_EXAMPLE)}
+              >
+                <span className="font-mono text-mono-xs text-ink">
+                  {RING_EXAMPLE.correct}
+                  <span className="text-ink-faint">/{RING_EXAMPLE.total}</span>
+                </span>
+              </Ring>
+              <div className="flex items-center gap-3">
+                <Ring
+                  {...SPOT_EXAMPLE}
+                  size={28}
+                  label={ringLabel("Concept", SPOT_EXAMPLE)}
+                />
+                <span className="flex flex-col">
+                  <span className="text-body text-ink">Weak spot</span>
+                  <RingLegend {...SPOT_EXAMPLE} />
+                </span>
+              </div>
+              <Ring
+                total={18}
+                correct={0}
+                wrong={0}
+                size={40}
+                label="Untouched topic"
+              />
+            </div>
+          </div>
+
+          <div className="border-line flex flex-col gap-3 border-t pt-6">
+            <p className="text-label text-ink-muted">
+              Concept chips: labels, never buttons
+            </p>
+            <TagChips
+              tags={[
+                { slug: "chain-rule", name: "Chain rule" },
+                { slug: "polynomial", name: "Polynomial" },
+                { slug: "exponential", name: "Exponential" },
+              ]}
+            />
           </div>
 
           <div className="border-line flex flex-col gap-3 border-t pt-6">
@@ -273,6 +338,13 @@ export default function TokensPage() {
             >
               Disabled
             </button>
+          </div>
+
+          <div className="border-line flex flex-col border-t pt-6">
+            <p className="text-label text-ink-muted">
+              Notice: one line where a screen would be
+            </p>
+            <Notice muted>Finding your next question…</Notice>
           </div>
         </Card>
       </div>
