@@ -102,7 +102,7 @@ export function SessionBoard({
                   ? "One question wrong."
                   : `${wrong} questions wrong.`}
               {ranShort &&
-                ` The pool ran out after ${records.length} of ${planned}.`}
+                ` Only ${records.length} ${records.length === 1 ? "question was" : "questions were"} available, not ${planned}.`}
             </p>
           </div>
 

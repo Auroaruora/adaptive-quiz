@@ -112,6 +112,11 @@ export function Session({
           askedInSource.current = 0;
           continue;
         }
+        // On a source's first question the backend says how many the
+        // pool holds, so the bar is sized to what can actually be asked.
+        if (askedInSource.current === 0 && next.remaining < source.take) {
+          setPlanned((n) => n - (source.take - next.remaining));
+        }
         served.current[source.topic.id] = [...exclude, next.question.id];
         setCurrent({ question: next.question, topic: source.topic });
         return;

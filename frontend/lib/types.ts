@@ -56,8 +56,14 @@ export interface Ability {
  * convention: narrowing on `complete` is the only way to reach the question.
  */
 export type NextQuestion =
-  | { question: Question; ability: Ability; complete: false }
-  | { question: null; ability: Ability; complete: true };
+  | {
+      question: Question;
+      ability: Ability;
+      complete: false;
+      /** Questions the pool could still serve, counting this one. */
+      remaining: number;
+    }
+  | { question: null; ability: Ability; complete: true; remaining: 0 };
 
 export interface Feedback {
   isCorrect: boolean;
