@@ -73,7 +73,7 @@ CLAUDE.md
 .gitignore              # journal/, .env, venv/, node_modules/, etc.
 .env                     # local DB credentials (gitignored)
 .env.example             # committed placeholders for .env
-docker-compose.yml       # local MySQL service
+docker-compose.yml       # MySQL by default; backend + frontend behind --profile app
 .claude/
   settings.json         # hook config (committed)
   settings.local.json   # machine-specific overrides (gitignored)
@@ -92,6 +92,8 @@ docs/
   design.md             # visual system; tokens are the only permitted values
   api.md                # endpoint contract, secrecy rule, selection tiers
 backend/
+  Dockerfile            # two-stage python:3.12-slim; ships alembic and the seed script
+  .dockerignore         # venv, tests and tooling config stay out of the image
   alembic.ini           # alembic config; DB URL deliberately absent (env.py builds it)
   app/
     __init__.py
@@ -140,6 +142,8 @@ backend/
   .coveragerc           # greenlet tracing, without which coverage misreads
   ruff.toml             # ruff config (Google style, line-length 80)
 frontend/
+  Dockerfile            # three-stage node:24-alpine; copies the standalone build
+  .dockerignore         # node_modules, .next and env files stay out of the context
   AGENTS.md             # written by next dev; read node_modules/next/dist/docs first
   app/
     page.tsx            # / — the dashboard, behind the name prompt
@@ -197,6 +201,7 @@ frontend/
     user.ts             # remembered student in localStorage, as a store
     ability.ts          # accuracy and its band, presentation only
     fixtures.ts         # sample payloads for building screens without a backend
+  next.config.ts        # output: standalone, for the Docker image
   postcss.config.mjs    # @tailwindcss/postcss
   eslint.config.mjs      # eslint-config-next + eslint-config-prettier
   .prettierrc.json
@@ -411,7 +416,19 @@ Sessions — every sitting is a fixed run, then a board:
       and a route to the topic summary once every question is mastered
 
 ### Phase 5 — Deployment
-- [ ] Dockerize backend + frontend
+- [x] Dockerize backend + frontend
+  - Backend: two-stage `python:3.12-slim`, venv copied across, non-root,
+    `HEALTHCHECK` on `/health`; alembic, migrations, seed script and seeds
+    ship in the image so schema and content run from the served code
+  - Frontend: `output: "standalone"`, three-stage `node:24-alpine`, non-root;
+    `NEXT_PUBLIC_API_URL` is a build arg because Next inlines it into the
+    browser bundle, so it is the URL the browser calls, not a service name
+  - Compose: `backend` and `frontend` sit behind `--profile app`, so plain
+    `docker compose up -d` still starts MySQL alone for native dev; MySQL
+    gained a TCP `mysqladmin ping` healthcheck so the backend waits for it
+  - Verified locally: both images build, all three containers report
+    healthy, `/topics` reads from MySQL by service name, the home page
+    serves, `alembic current` runs from the image
 - [ ] Deploy MySQL via RDS
 - [ ] Deploy backend + frontend to AWS (EC2)
 - [ ] Confirm live demo works end-to-end
