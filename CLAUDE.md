@@ -142,45 +142,55 @@ backend/
 frontend/
   AGENTS.md             # written by next dev; read node_modules/next/dist/docs first
   app/
-    page.tsx            # Next.js hello-world page
-    layout.tsx          # next/font wiring for the three design families
+    page.tsx            # / — the dashboard, behind the name prompt
+    layout.tsx          # fonts, then UserProvider and AppShell around every route
     globals.css         # Tailwind v4 @theme — the design tokens live here
-    preview/
-      feedback/page.tsx # dev-only side-by-side of both feedback states
-      quiz/page.tsx     # dev-only clickable ask -> answer -> feedback loop
-      dashboard/page.tsx# dev-only; toggles between new and started accounts
-      complete/page.tsx # dev-only completion screen
+    quiz/[topic]/page.tsx   # the quiz loop; ?tag= narrows to one concept
+    placement/page.tsx  # four questions per topic through the normal endpoints
+    preview/            # dev-only screens on fixtures; no user needed
+      quiz/page.tsx     # clickable ask -> answer -> feedback loop
+      dashboard/page.tsx# toggles between new and started accounts
+      complete/page.tsx # completion screen
       tokens/page.tsx   # the design system, rendered from live classes
-      layout.tsx        # wraps every preview screen in AppShell
   components/
     shell/
-      AppShell.tsx      # brand, nav pills, PROTOTYPE tag
+      AppShell.tsx      # brand, nav pills, the student's name, PROTOTYPE tag
+      UserProvider.tsx  # subscribes to the remembered student in storage
+      RequireUser.tsx   # name prompt until there is a student; render-prop
+      NamePrompt.tsx    # the first-visit question; creates the user
     ui/
       Eyebrow.tsx       # mono uppercase label above a heading
       SegmentedBar.tsx  # countable progress, one segment per question
       Panel.tsx         # surface or the one deep panel per screen
+      Notice.tsx        # one line of loading or error where a screen would be
     quiz/
       OptionButton.tsx  # one option; idle/selected/correct/incorrect/muted
       OptionList.tsx    # decides each option's state after an answer
       QuestionStem.tsx
-      FeedbackPanel.tsx # composes the post-answer region
+      FeedbackPanel.tsx # composes the post-answer region; practise similar
       MisconceptionNote.tsx
       SolutionSteps.tsx
       AbilityGain.tsx   # renders only when ability rises; see design.md
       MasteryBar.tsx    # progress through a topic, counted in mastered
-      QuizScreen.tsx    # asking and feedback as one screen
+      TagChips.tsx      # concepts as chips; buttons when practice can narrow
+      QuizScreen.tsx    # asking and feedback as one screen; placement mode
+      TopicQuiz.tsx     # the loop on live data; tag lives in the URL
     dashboard/
       Dashboard.tsx     # landing screen; placement panel is data-driven
+      DashboardPage.tsx # fetches progress; a stale user id re-prompts
       TopicCard.tsx
-      PlacementPanel.tsx# the dark panel, shown until placed
+      PlacementPanel.tsx# the dark panel, shown until placed or skipped
       WeakSpots.tsx     # concepts being got wrong; replaced the theta chart
-      AbilitySparkline.tsx  # hand-rolled SVG, fixed -2..2 axis
+    placement/
+      Placement.tsx     # twelve-step run, four per topic, segmented bar
     complete/
       TopicComplete.tsx # reached when the API reports complete: true
+      AttemptStrip.tsx  # every attempt in order; replaced the sparkline
   lib/
     types.ts            # TS mirrors of the API payloads
     api.ts              # typed wrappers for the five endpoints; throws ApiError
-    ability.ts          # theta -> 0-100 score, presentation only
+    user.ts             # remembered student in localStorage, as a store
+    ability.ts          # accuracy and its band, presentation only
     fixtures.ts         # sample payloads for building screens without a backend
   postcss.config.mjs    # @tailwindcss/postcss
   eslint.config.mjs      # eslint-config-next + eslint-config-prettier
@@ -367,16 +377,20 @@ Each phase ends with something runnable/testable before moving to the next.
 - [x] A data layer: typed fetch wrappers for the five endpoints in
       `lib/api.ts`, base URL from `NEXT_PUBLIC_API_URL`, non-2xx thrown
       as `ApiError` with the status so a stale user id is catchable
-- [ ] Real routes. Only `/preview/*` exists; `/` is still the Next starter
-      page, and there is no route a student could use
-- [ ] User identity — `docs/design.md` calls for a name prompt on first
-      visit, which does not exist
-- [ ] Navigation: "Continue", the weak-spot buttons and the tag chips all
-      call empty handlers today
-- [ ] Placement flow — the dark panel on the dashboard is presentation only
-- [ ] "Practise similar" on the feedback screen, which is where the steering
-      would be most convincing and currently says nothing
-- [ ] Replace the ability sparkline still on the topic complete screen
+- [x] Real routes: `/` is the dashboard, `/quiz/[topic]` the loop with
+      `?tag=` for drilling, `/placement` the first session; the Next starter
+      page and its assets are gone, `/preview/*` stays for fixtures
+- [x] User identity — a name prompt rendered in place of any screen that
+      needs a student, remembered in localStorage; a stale id re-prompts
+- [x] Navigation: "Continue" opens the topic, weak spots and chips open it
+      narrowed to a concept, "Back to topics" returns
+- [x] Placement flow — four questions per topic through the ordinary
+      endpoints, no backend special case; the copy no longer claims answers
+      are ungraded, since every attempt counts
+- [x] "Practise similar" beside "Next question" after a wrong answer,
+      narrowing to the question's most specific concept
+- [x] Replace the ability sparkline on the topic complete screen with the
+      run as a strip of attempts, plus weak spots to practise
 
 ### Phase 5 — Caching layer
 - [ ] Add Valkey for caching the "next question candidate pool" per session

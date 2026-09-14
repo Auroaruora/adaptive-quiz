@@ -197,6 +197,23 @@ the method asks for it.
 Reached when the API returns `complete: true`. A summary of the run and a
 route back to the dashboard.
 
+The run itself is shown as a strip of attempts in order, filled for correct
+and hollow for incorrect, so shape carries the meaning alongside colour. It
+replaced a line of ability over time for the same reason the dashboard's
+chart went: a student can see that the wrong answers thinned out, and
+cannot act on a logit.
+
+### Placement
+The first session. Four questions from each topic, served by the ordinary
+next-question selection, with a twelve-segment bar in place of the mastery
+bar and the concept chips inert. Every attempt counts toward accuracy, and
+the copy says so by promising an explanation for each answer rather than
+claiming nothing is graded.
+
+### Name prompt
+Rendered in place of whichever screen needed a student and found none, as
+that screen's one dark panel. It is not a route.
+
 ### Not building
 No login (there is no auth by design), no settings, no question browser, no
 admin view. User identity is a name prompt on first visit, not a screen.
