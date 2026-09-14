@@ -11,6 +11,8 @@ const BLURBS: Record<string, string> = {
 
 interface DashboardProps {
   progress: Progress;
+  /** The student chose to skip placement; the cards are the way in. */
+  placementDismissed?: boolean;
   onStart: (slug: string) => void;
   onPractise: (topicSlug: string, tagSlug: string) => void;
   onBeginPlacement: () => void;
@@ -22,10 +24,12 @@ interface DashboardProps {
  *
  * Whether a student has been placed is derived from the data rather than a
  * flag, so the placement panel cannot end up shown to someone mid-way
- * through or hidden from someone starting out.
+ * through or hidden from someone starting out. Skipping is the one
+ * exception, and it only ever hides the panel, never the cards.
  */
 export function Dashboard({
   progress,
+  placementDismissed = false,
   onStart,
   onPractise,
   onBeginPlacement,
@@ -42,13 +46,14 @@ export function Dashboard({
         </h1>
         {unplaced && (
           <p className="text-body-lg text-ink-muted max-w-[60ch]">
-            Three topics, {skills} skills each. Nothing is scored until you have
-            been placed — the first session only figures out where to start you.
+            Three topics, {skills} questions each. A short placement finds where
+            to start you in each of them, and every answer along the way is
+            explained.
           </p>
         )}
       </header>
 
-      {unplaced && (
+      {unplaced && !placementDismissed && (
         <PlacementPanel
           questionCount={12}
           onBegin={onBeginPlacement}

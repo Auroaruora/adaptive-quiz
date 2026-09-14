@@ -10,9 +10,10 @@ interface PlacementPanelProps {
 /**
  * The dashboard's one dark panel, shown until a student has been placed.
  *
- * It leads with what the session costs and what it is not: nothing here is
- * graded. A placement test that looks like a test is the fastest way to
- * make someone close the tab.
+ * It leads with what the session costs and how it behaves. A placement
+ * test that looks like a test is the fastest way to make someone close the
+ * tab, but it does not pretend answers are thrown away: every attempt
+ * counts, and the copy says so by promising an explanation instead.
  */
 export function PlacementPanel({
   questionCount,
@@ -26,9 +27,9 @@ export function PlacementPanel({
           <Eyebrow tone="onDark">Start here</Eyebrow>
           <h2 className="text-h2">Take a {questionCount}-question placement</h2>
           <p className="text-body-lg text-surface/70">
-            Questions get harder or easier as you answer, so it takes about
-            eight minutes and lands you in the right place in all three topics.
-            Nothing here is graded.
+            Four questions from each topic. They get harder or easier as you
+            answer, and you see why each answer is right before moving on, so it
+            takes about eight minutes and starts you in the right place.
           </p>
         </div>
 
