@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { Dashboard } from "./Dashboard";
+import { practiceHref } from "@/components/session/TopicSession";
 import { useUser } from "@/components/shell/UserProvider";
 import { Notice } from "@/components/ui/Notice";
 import { ApiError, getProgress } from "@/lib/api";
@@ -56,10 +57,8 @@ export function DashboardPage({ user }: DashboardPageProps) {
     <Dashboard
       progress={progress}
       placementDismissed={dismissed}
-      onStart={(slug) => router.push(`/quiz/${slug}`)}
-      onPractise={(slug, tag) =>
-        router.push(`/quiz/${slug}?tag=${encodeURIComponent(tag)}`)
-      }
+      onStart={(slug) => router.push(practiceHref(slug))}
+      onPractise={(slug, tag) => router.push(practiceHref(slug, [tag]))}
       onBeginPlacement={() => router.push("/placement")}
       onSkipPlacement={() => {
         savePlacementDismissed();

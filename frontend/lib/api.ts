@@ -88,20 +88,29 @@ export function createUser(displayName: string): Promise<User> {
   return post("/users", { displayName });
 }
 
+export interface NextQuestionOptions {
+  /** Narrows the pool to questions carrying any of these concepts. */
+  tags?: readonly string[];
+  /** Question ids already asked this session; never served again. */
+  exclude?: readonly number[];
+}
+
 /**
- * @param tag Narrows the pool to one concept. With it, `complete` means
- *   that concept is finished, not the topic.
+ * `complete` means nothing is left after the narrowing: the topic, the
+ * concepts, or this session's pool. It does not mean the topic is
+ * mastered; progress says that.
  */
 export function nextQuestion(
   userId: number,
   topicId: number,
-  tag?: string,
+  { tags = [], exclude = [] }: NextQuestionOptions = {},
 ): Promise<NextQuestion> {
   const query = new URLSearchParams({
     userId: String(userId),
     topicId: String(topicId),
   });
-  if (tag) query.set("tag", tag);
+  for (const tag of tags) query.append("tag", tag);
+  for (const id of exclude) query.append("exclude", String(id));
   return request(`/next-question?${query}`);
 }
 

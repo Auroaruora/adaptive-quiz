@@ -1,16 +1,24 @@
 import { FeedbackPanel } from "./FeedbackPanel";
-import { MasteryBar } from "./MasteryBar";
 import { OptionList } from "./OptionList";
 import { QuestionStem } from "./QuestionStem";
 import { TagChips } from "./TagChips";
-import { SegmentedBar } from "@/components/ui/SegmentedBar";
+import { SegmentedBar, type Outcome } from "@/components/ui/SegmentedBar";
 import type { Feedback, Question } from "@/lib/types";
+
+export interface SessionProgress {
+  /** Zero-based position of this question in the run. */
+  step: number;
+  of: number;
+  /** Results so far, one per completed step. */
+  outcomes: readonly Outcome[];
+}
 
 interface QuizScreenProps {
   topicName: string;
+  /** What kind of run this is: "Placement", "Review". Omit for practice. */
+  mode?: string;
   question: Question;
-  mastered: number;
-  total: number;
+  progress: SessionProgress;
   /** Null while the question is still being asked. */
   feedback: Feedback | null;
   chosenOptionId: number | null;
@@ -19,16 +27,7 @@ interface QuizScreenProps {
   onSelect: (optionId: number) => void;
   onSubmit: () => void;
   onNext: () => void;
-  /** Slug of the concept being drilled, if practice is narrowed. */
-  practising?: string | null;
-  onPractise?: (slug: string) => void;
-  onClearPractice?: () => void;
-  /**
-   * During placement the mastery bar gives way to a countable run of
-   * steps, and the concept chips stop being buttons: narrowing practice is
-   * for later, once there is something to narrow.
-   */
-  placement?: { step: number; of: number };
+  nextLabel?: string;
 }
 
 /**
@@ -39,86 +38,61 @@ interface QuizScreenProps {
  * lands. Nothing reflows underneath the student between choosing an answer
  * and reading why it was wrong.
  *
+ * Every run through it is a session with a countable bar: placement,
+ * practice and review all share this header. Concept chips are labels
+ * here, never buttons; narrowing practice is a decision for the board at
+ * the end of a session, not something to do halfway through one.
+ *
  * Purely presentational: every value arrives as a prop, which is what lets
  * it run from fixtures in the previews and from the API in the app.
  */
 export function QuizScreen({
   topicName,
+  mode,
   question,
-  mastered,
-  total,
+  progress,
   feedback,
   chosenOptionId,
   submitting = false,
   onSelect,
   onSubmit,
   onNext,
-  practising = null,
-  onPractise,
-  onClearPractice,
-  placement,
+  nextLabel,
 }: QuizScreenProps) {
   const answered = feedback !== null;
-  const drilled = question.tags.find((t) => t.slug === practising);
-  // Rarest first, so the first tag is the most specific thing to practise.
-  const similar = question.tags[0];
-  const offerSimilar =
-    !placement &&
-    onPractise !== undefined &&
-    similar !== undefined &&
-    similar.slug !== practising;
+  const wrong = progress.outcomes.filter((o) => o === "incorrect").length;
 
   return (
     <div className="mx-auto flex w-full max-w-[720px] flex-col gap-8">
       <header className="flex flex-col gap-4">
         <div className="flex flex-wrap items-baseline justify-between gap-3">
           <p className="text-label text-ink-muted">
-            {placement ? (
+            {mode ? (
               <>
-                Placement · <span className="text-ink">{topicName}</span>
+                {mode} · <span className="text-ink">{topicName}</span>
               </>
             ) : (
               topicName
             )}
           </p>
-          {placement && (
-            <p className="text-ink-muted font-mono text-mono-xs">
-              {placement.step + 1} / {placement.of}
-            </p>
-          )}
-          {drilled && onClearPractice && (
-            <p className="text-label text-ink-muted flex items-center gap-3">
-              <span>
-                Practising <span className="text-ink">{drilled.name}</span>
-              </span>
-              <button
-                type="button"
-                onClick={onClearPractice}
-                className="text-accent hover:text-accent-press cursor-pointer underline"
-              >
-                practise everything
-              </button>
-            </p>
-          )}
+          <p className="text-ink-muted font-mono text-mono-xs">
+            {progress.step + 1} / {progress.of}
+            {wrong > 0 && (
+              <span className="text-incorrect-ink"> · {wrong} wrong</span>
+            )}
+          </p>
         </div>
-        {placement ? (
-          <SegmentedBar
-            total={placement.of}
-            filled={placement.step}
-            current={placement.step}
-            label={`Placement question ${placement.step + 1} of ${placement.of}`}
-          />
-        ) : (
-          <MasteryBar mastered={mastered} total={total} />
-        )}
+        <SegmentedBar
+          total={progress.of}
+          filled={progress.step}
+          current={progress.step}
+          outcomes={progress.outcomes}
+          label={`Question ${progress.step + 1} of ${progress.of}, ${wrong} wrong so far`}
+        />
       </header>
 
       <div className="flex flex-col gap-4">
-        <TagChips
-          tags={question.tags}
-          active={practising}
-          onPractise={placement ? undefined : onPractise}
-        />
+        <TagChips tags={question.tags} />
         <QuestionStem>{question.stem}</QuestionStem>
       </div>
 
@@ -133,11 +107,7 @@ export function QuizScreen({
         <FeedbackPanel
           feedback={feedback}
           onNext={onNext}
-          practiseSimilar={
-            offerSimilar
-              ? { name: similar.name, onClick: () => onPractise(similar.slug) }
-              : undefined
-          }
+          nextLabel={nextLabel}
         />
       ) : (
         <button

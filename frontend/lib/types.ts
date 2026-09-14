@@ -75,6 +75,14 @@ export interface AnswerResult {
   next: NextQuestion;
 }
 
+/** Everything a session keeps about one answered question. */
+export interface AnswerRecord {
+  question: Question;
+  topic: Topic;
+  chosenOptionId: number;
+  feedback: Feedback;
+}
+
 /** How one option should render once an answer has been submitted. */
 export type OptionState =
   "idle" | "selected" | "correct" | "incorrect" | "muted";
