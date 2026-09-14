@@ -190,13 +190,14 @@ async def solution_steps(session: AsyncSession, question_id: int) -> list[str]:
     return list(rows)
 
 
-async def mastered_count(
+async def latest_outcomes(
     session: AsyncSession, *, user_id: int, topic_id: int
-) -> int:
-    """Counts questions whose most recent answer was correct.
+) -> dict[int, bool]:
+    """Whether each attempted question was last answered correctly.
 
-    This is the same rule that decides when a topic is complete, so the
-    dashboard and the selector never disagree about progress.
+    "Last answered correctly" is the rule that decides when a topic is
+    complete, so everything derived from this — mastered, wrong, and the
+    per-concept rings — agrees with the selector about progress.
 
     Args:
         session: Open async session.
@@ -204,18 +205,36 @@ async def mastered_count(
         topic_id: Topic.
 
     Returns:
-        Number of questions currently mastered.
+        Question id to the outcome of its most recent attempt. Questions
+        never attempted are absent.
     """
     latest = (
         select(func.max(Attempt.id))
         .where(Attempt.user_id == user_id, Attempt.topic_id == topic_id)
         .group_by(Attempt.question_id)
     )
-    return await session.scalar(
-        select(func.count())
-        .select_from(Attempt)
-        .where(Attempt.id.in_(latest), Attempt.is_correct.is_(True))
+    rows = await session.execute(
+        select(Attempt.question_id, Attempt.is_correct).where(
+            Attempt.id.in_(latest)
+        )
     )
+    return {question_id: bool(is_correct) for question_id, is_correct in rows}
+
+
+async def _questions_by_tag(
+    session: AsyncSession, *, topic_id: int
+) -> dict[str, set[int]]:
+    """Every active question in a topic, grouped by tag slug."""
+    rows = await session.execute(
+        select(Tag.slug, QuestionTag.question_id)
+        .join(QuestionTag, QuestionTag.tag_id == Tag.id)
+        .join(Question, Question.id == QuestionTag.question_id)
+        .where(Question.topic_id == topic_id, Question.is_active.is_(True))
+    )
+    grouped: dict[str, set[int]] = {}
+    for slug, question_id in rows:
+        grouped.setdefault(slug, set()).add(question_id)
+    return grouped
 
 
 async def weak_spots(
@@ -230,9 +249,9 @@ async def weak_spots(
 
     Ordered by the same decayed urgency that steers selection, so the
     dashboard names the things the quiz is about to serve rather than a
-    separate opinion about them. The count shown alongside is the plain
-    number of misses, because "missed 3 times" is readable and a decayed
-    weight is not.
+    separate opinion about them. Alongside each is where that concept's
+    questions stand — last answered right, last answered wrong, or not yet
+    practised — counted in questions so the parts add up to the whole.
 
     Args:
         session: Open async session.
@@ -267,7 +286,24 @@ async def weak_spots(
         key=lambda item: practice.urgency(item[1][1], now),
         reverse=True,
     )
-    return [
-        schemas.WeakSpot(slug=slug, name=name, missed=len(when))
-        for slug, (name, when) in ranked[:limit]
-    ]
+    if not ranked:
+        return []
+
+    outcomes = await latest_outcomes(
+        session, user_id=user_id, topic_id=topic_id
+    )
+    by_tag = await _questions_by_tag(session, topic_id=topic_id)
+    spots = []
+    for slug, (name, _) in ranked[:limit]:
+        questions = by_tag.get(slug, set())
+        states = [outcomes[q] for q in questions if q in outcomes]
+        spots.append(
+            schemas.WeakSpot(
+                slug=slug,
+                name=name,
+                total=len(questions),
+                correct=sum(states),
+                wrong=len(states) - sum(states),
+            )
+        )
+    return spots

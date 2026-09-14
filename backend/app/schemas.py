@@ -140,21 +140,27 @@ class SubmitAnswerOut(_Wire):
 class WeakSpot(_Wire):
     """A concept the student is currently getting wrong.
 
-    `missed` is the plain count, because "missed 3 times" is readable.
-    The ordering carries the decay, so the list is worst-first without
-    exposing a weight nobody can interpret.
+    Counted in questions, not attempts, so the three parts add up to the
+    whole: `correct` were last answered right, `wrong` last answered
+    wrong, and the rest of `total` have not been practised. The ordering
+    carries the decay, so the list is worst-first without exposing a
+    weight nobody can interpret.
     """
 
     slug: str
     name: str
-    missed: int
+    total: int
+    correct: int
+    wrong: int
 
 
 class TopicSummary(_Wire):
     """Headline numbers for one topic.
 
     `mastered` counts questions whose most recent answer was correct,
-    which is the same rule that decides when a topic is complete.
+    which is the same rule that decides when a topic is complete; `wrong`
+    counts those whose most recent answer was not. The rest of `total`
+    have not been practised.
     """
 
     theta: float
@@ -162,6 +168,7 @@ class TopicSummary(_Wire):
     answered: int
     correct: int
     mastered: int
+    wrong: int
     total: int
 
 

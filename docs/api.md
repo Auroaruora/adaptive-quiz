@@ -131,10 +131,12 @@ untouched ones, so topics do not appear only once started.
     "topics": [ { "slug": "logarithms", "name": "Logarithms",
                   "summary":   { "theta": 0.62, "level": "proficient",
                                  "answered": 11, "correct": 8,
-                                 "mastered": 8, "total": 18 },
+                                 "mastered": 8, "wrong": 2,
+                                 "total": 18 },
                   "weakSpots": [ { "slug": "extraneous-root",
                                    "name": "Extraneous root",
-                                   "missed": 2 } ],
+                                   "total": 4, "correct": 1,
+                                   "wrong": 2 } ],
                   "series":    [ { "at": "...", "theta": 0.15,
                                    "isCorrect": true }, ... ] } ] }
 ```
@@ -142,8 +144,15 @@ untouched ones, so topics do not appear only once started.
 `weakSpots` names the concepts the student is currently getting wrong, at
 most three, worst first. The ordering uses the same decayed urgency that
 steers selection, so the dashboard names what the quiz is about to serve
-rather than offering a second opinion. `missed` is the plain count, because
-"missed 3 times" is readable where a decayed weight is not.
+rather than offering a second opinion. Each spot says where that concept's
+questions stand: `correct` were last answered right, `wrong` last answered
+wrong, and the rest of `total` have not been practised. Counted in
+questions rather than attempts, so the three parts add up to the whole and
+can be drawn as a ring.
+
+`summary.mastered` and `summary.wrong` are the same split for the whole
+topic. Both come from each question's most recent attempt, the rule that
+decides completion, so the rings and the selector never disagree.
 
 ---
 

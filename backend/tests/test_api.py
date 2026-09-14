@@ -543,8 +543,52 @@ class TestWeakSpots:
 
         assert logs["weakSpots"]
         assert {w["slug"] for w in logs["weakSpots"]} <= expected
-        assert all(w["missed"] == 1 for w in logs["weakSpots"])
         assert all(w["name"] for w in logs["weakSpots"])
+        for spot in logs["weakSpots"]:
+            assert spot["wrong"] == 1
+            assert spot["correct"] == 0
+            assert spot["total"] >= 1
+
+    async def test_a_spot_counts_where_its_questions_stand(
+        self, client, user_id, topic_id, session
+    ):
+        """One wrong, one right on the same concept: the ring must agree."""
+        first = (
+            await client.get(
+                f"/next-question?userId={user_id}&topicId={topic_id}"
+            )
+        ).json()["question"]
+        await _answer(
+            client,
+            user_id,
+            first["id"],
+            await _wrong_option_id(session, first["id"]),
+        )
+        concept = first["tags"][-1]["slug"]
+
+        second = (
+            await client.get(
+                f"/next-question?userId={user_id}&topicId={topic_id}"
+                f"&tag={concept}&exclude={first['id']}"
+            )
+        ).json()["question"]
+        await _answer(
+            client,
+            user_id,
+            second["id"],
+            await _correct_option_id(session, second["id"]),
+        )
+
+        body = (await client.get(f"/progress/{user_id}")).json()
+        logs = next(t for t in body["topics"] if t["slug"] == "logarithms")
+        spot = next(w for w in logs["weakSpots"] if w["slug"] == concept)
+        assert spot["wrong"] == 1
+        assert spot["correct"] == 1
+        assert spot["total"] == len(
+            await _tagged_ids(session, topic_id, concept)
+        )
+        assert logs["summary"]["mastered"] == 1
+        assert logs["summary"]["wrong"] == 1
 
     async def test_a_correct_answer_creates_no_weak_spot(
         self, client, user_id, topic_id, session
@@ -578,10 +622,10 @@ class TestWeakSpots:
         logs = next(t for t in body["topics"] if t["slug"] == "logarithms")
         assert 0 < len(logs["weakSpots"]) <= 3
 
-    async def test_repeated_misses_of_one_concept_are_counted(
+    async def test_misses_on_two_questions_of_one_concept_both_count(
         self, client, user_id, topic_id, session
     ):
-        """Missing the same concept twice should read as two, not one."""
+        """Steering makes three wrong answers share a concept; both count."""
         for _ in range(3):
             served = (
                 await client.get(
@@ -593,7 +637,8 @@ class TestWeakSpots:
 
         body = (await client.get(f"/progress/{user_id}")).json()
         logs = next(t for t in body["topics"] if t["slug"] == "logarithms")
-        assert max(w["missed"] for w in logs["weakSpots"]) > 1
+        assert max(w["wrong"] for w in logs["weakSpots"]) > 1
+        assert logs["summary"]["wrong"] == 3
 
 
 class TestQuestionTags:

@@ -64,6 +64,11 @@ async def progress(
             )
         )
 
+        outcomes = await services.latest_outcomes(
+            session, user_id=user_id, topic_id=topic.id
+        )
+        mastered = sum(outcomes.values())
+
         topics.append(
             schemas.TopicProgress(
                 slug=topic.slug,
@@ -73,9 +78,8 @@ async def progress(
                     level=irt.ability_level(theta),
                     answered=len(series),
                     correct=sum(p.is_correct for p in series),
-                    mastered=await services.mastered_count(
-                        session, user_id=user_id, topic_id=topic.id
-                    ),
+                    mastered=mastered,
+                    wrong=len(outcomes) - mastered,
                     total=total,
                 ),
                 weak_spots=await services.weak_spots(
