@@ -82,10 +82,17 @@ questions is an exhausted pool.
                                  "name": "Log equation" }, ... ],
                   "options": [ {id, text, position} x4 ] },
     "ability":  { "theta": 0.0, "level": "progressing" },
-    "complete": false }
+    "complete": false,
+    "remaining": 18 }
 ```
 
 `question` is null exactly when `complete` is true.
+
+`remaining` is how many questions the narrowed pool could still serve,
+counting the one returned: unseen plus last-answered-wrong, minus
+exclusions. A session reads it from its first question to size the run,
+so a concept with two questions gets a two-segment bar rather than ten
+segments that were never going to fill.
 
 `tags` are ordered rarest first within the topic, so a client showing only
 a few shows the most specific. They name a method, never an outcome, so

@@ -247,6 +247,38 @@ def _most_urgent(
     return rng.choices(questions, weights=weights, k=1)[0]
 
 
+async def count_available(
+    session: AsyncSession,
+    *,
+    user_id: int,
+    topic_id: int,
+    tag_slugs: Sequence[str] | None = None,
+    exclude: Collection[int] = (),
+) -> int:
+    """Counts the questions either tier could still serve.
+
+    A session sizes its run from this on its first question, so a concept
+    with two questions shows a two-segment bar rather than ten.
+
+    Args:
+        session: Open async session.
+        user_id: Student to serve.
+        topic_id: Topic to serve from.
+        tag_slugs: The same narrowing `choose_question` applies.
+        exclude: The same exclusions `choose_question` applies.
+
+    Returns:
+        Unseen plus last-answered-wrong, after narrowing.
+    """
+    total = 0
+    for tier in (_unseen, _answered_wrong):
+        query = tier(user_id, topic_id, tag_slugs, exclude)
+        total += await session.scalar(
+            select(func.count()).select_from(query.subquery())
+        )
+    return total
+
+
 async def choose_question(
     session: AsyncSession,
     *,

@@ -5,7 +5,6 @@ correct answer or a question's difficulty to the frontend before an answer
 is submitted, and that rule is only worth anything if something checks it.
 """
 
-import pytest
 from sqlalchemy import func, select, update
 
 from app import selection
@@ -279,13 +278,18 @@ class TestSubmitAnswer:
                 f"/next-question?userId={user_id}&topicId={topic_id}"
             )
         ).json()["question"]
+        question = await session.get(Question, served["id"])
+        # Relative to the row as found: other students' answers already
+        # sit on it in a development database.
+        answered_before = question.times_answered
+        correct_before = question.times_correct
+
         option = await _correct_option_id(session, served["id"])
         await _answer(client, user_id, served["id"], option)
 
-        question = await session.get(Question, served["id"])
         await session.refresh(question)
-        assert question.times_answered == 1
-        assert question.times_correct == 1
+        assert question.times_answered == answered_before + 1
+        assert question.times_correct == correct_before + 1
 
     async def test_never_serves_the_same_question_twice_running(
         self, client, user_id, topic_id, session
@@ -775,6 +779,28 @@ class TestSessions:
             )
         ).json()
         assert again["question"]["id"] == first
+
+    async def test_reports_how_many_remain_in_the_pool(
+        self, client, user_id, topic_id, session
+    ):
+        """A session sizes its bar from this, so it must count exactly."""
+        fresh = (await client.get(self._url(user_id, topic_id))).json()
+        assert fresh["remaining"] == 18
+
+        served = [fresh["question"]["id"]]
+        after_one = (
+            await client.get(self._url(user_id, topic_id, served))
+        ).json()
+        assert after_one["remaining"] == 17
+
+        concept = (
+            await client.get(
+                self._url(user_id, topic_id, tags=["change-of-base"])
+            )
+        ).json()
+        assert concept["remaining"] == len(
+            await _tagged_ids(session, topic_id, "change-of-base")
+        )
 
     async def test_several_tags_pool_the_union(
         self, client, user_id, topic_id, session

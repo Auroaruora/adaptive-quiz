@@ -91,16 +91,20 @@ class AbilityOut(_Wire):
 
 
 class NextQuestionOut(_Wire):
-    """The next question, or a signal that the topic is finished.
+    """The next question, or a signal that the pool is finished.
 
-    `question` is null exactly when `complete` is true, which means every
-    active question in the topic has been answered correctly at least
-    once.
+    `question` is null exactly when `complete` is true, which means nothing
+    is left after the request's narrowing: the topic, the concepts asked
+    for, or a session's pool once its exclusions are applied.
+
+    `remaining` counts what that pool could still serve, including the
+    question returned, so a session can size its run before it starts.
     """
 
     question: QuestionOut | None
     ability: AbilityOut
     complete: bool
+    remaining: int
 
 
 class AnswerCreate(_Wire):

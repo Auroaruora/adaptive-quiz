@@ -155,12 +155,20 @@ async def next_question_payload(
         tag_slugs=tag_slugs,
         exclude=exclude,
     )
+    remaining = await selection.count_available(
+        session,
+        user_id=user_id,
+        topic_id=topic_id,
+        tag_slugs=tag_slugs,
+        exclude=exclude,
+    )
     return schemas.NextQuestionOut(
         question=(
             await question_payload(session, question) if question else None
         ),
         ability=schemas.AbilityOut(theta=theta, level=irt.ability_level(theta)),
         complete=question is None,
+        remaining=remaining,
     )
 
 
