@@ -534,7 +534,7 @@ performance, and both must be kept correct on write:
 
 ## Deliberate scope decisions
 
-Not gaps. Each was considered and ruled out, and each belongs in the Phase 7
+Not gaps. Each was considered and ruled out, and each belongs in the Phase 6
 README as a stated trade-off.
 
 - **No authentication.** No email, password, or session. The project

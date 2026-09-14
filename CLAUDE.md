@@ -12,10 +12,10 @@ documentation.
 - **Frontend:** Next.js + TypeScript
 - **Backend:** Python (FastAPI)
 - **Database:** MySQL
-- **Cache:** Valkey — used for session-level "next question pool"
-  and optionally a live leaderboard
-- **Deployment target:** AWS (EC2 + RDS MySQL) — deploy this
-  LAST, after the app works locally
+- **Cache:** none for now. Valkey is an optional later phase; see Phase 7
+  for the thresholds at which it would matter
+- **Deployment target:** AWS (EC2 + RDS MySQL) — the next phase, now that
+  the app works locally
 
 ## Core Concept
 Students answer questions; a per-topic ability estimate (θ) updates after every
@@ -60,7 +60,7 @@ smaller, roughly constant rate for user ability.
 person ability vs. item difficulty — and is what actual standardized/adaptive
 testing platforms use, which gives this project more direct relevance to
 IXL's domain. Document this trade-off (and the parameter-estimation
-simplification vs. full 2PL/3PL IRT) in the Phase 7 README.
+simplification vs. full 2PL/3PL IRT) in the Phase 6 README.
 
 ---
 
@@ -350,7 +350,7 @@ Each phase ends with something runnable/testable before moving to the next.
       k_b = 0.3 / (1 + n/10) (item difficulty is stationary, so it converges)
 - [x] Implement Rasch model probability function + parameter update function in isolation
 - [x] Unit tests: verify theta/b move correctly for correct/incorrect answers
-- [x] Document reasoning in `docs/irt-model.md`, to fold into the Phase 7 README
+- [x] Document reasoning in `docs/irt-model.md`, to fold into the Phase 6 README
 
 ### Phase 3 — Backend API
 - [x] Decide selection: randomesque over the 5 nearest by |b - theta|, with
@@ -410,21 +410,44 @@ Sessions — every sitting is a fixed run, then a board:
       "practise these concepts" (a new session on the rarest tag of each),
       and a route to the topic summary once every question is mastered
 
-### Phase 5 — Caching layer
-- [ ] Add Valkey for caching the "next question candidate pool" per session
-- [ ] (Optional) live leaderboard using Redis sorted sets
-
-### Phase 6 — Deployment
+### Phase 5 — Deployment
 - [ ] Dockerize backend + frontend
 - [ ] Deploy MySQL via RDS
 - [ ] Deploy backend + frontend to AWS (EC2)
 - [ ] Confirm live demo works end-to-end
 
-### Phase 7 — Documentation polish
+### Phase 6 — Documentation polish
 - [ ] README: architecture diagram, setup instructions, demo link
-- [ ] "Why these decisions" section (IRT vs static difficulty vs Elo, MySQL choice, caching rationale)
-- [ ] "How this would scale" section
+- [ ] "Why these decisions" section (IRT vs static difficulty vs Elo, MySQL
+      choice, why there is no cache)
+- [ ] "How this would scale" section, with the thresholds below at which a
+      cache would start to matter
 - [ ] Screenshots / short demo GIF
+
+### Phase 7 — Caching layer (optional)
+Deferred, and possibly never. Sessions are stateless on the backend — the
+frontend passes back what it has asked as `exclude` — so there is no pool to
+cache, and every request is a handful of indexed queries over a small bank.
+Nothing about deploying first makes this harder to add: selection sits behind
+two functions in `selection.py`, and Valkey would be one more container and
+one more environment variable.
+
+Thresholds at which it would start to matter, for the README:
+- Questions per topic: ~10,000. Selection loads a topic's unseen questions and
+  tags into Python per request. The fix is ranking in SQL, not a cache.
+- Attempts per student: ~10,000. Progress reads the whole history to build
+  the series. The fix is a summary or pagination.
+- Concurrent students: several hundred. Each answer is ~8 queries. Pooling
+  and read replicas come before a cache.
+- The one thing worth caching is topic-level structure shared by every
+  student: which tags each question carries and how common each is. On one
+  backend instance that is an in-process dictionary with a short expiry.
+  Valkey earns its place only with several instances needing to share it, or
+  sessions that should survive a reload server-side.
+
+- [ ] (Optional) in-process cache of topic tag structure, if the bank grows
+- [ ] (Optional) Valkey once there is more than one backend instance
+- [ ] (Optional) live leaderboard using sorted sets
 
 ---
 

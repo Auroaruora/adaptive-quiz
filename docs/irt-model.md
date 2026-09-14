@@ -2,7 +2,7 @@
 
 Why the adaptive engine works the way it does. The code is
 `backend/app/irt.py`; this explains the choices behind it, and feeds the
-"Why these decisions" section of the Phase 7 README.
+"Why these decisions" section of the Phase 6 README.
 
 ---
 

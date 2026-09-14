@@ -274,7 +274,7 @@ score.
 
 Theta has not gone away. It still breaks ties in selection and is still
 stored on every attempt. It simply never reaches the interface, and the
-Phase 7 README carries the IRT story instead.
+Phase 6 README carries the IRT story instead.
 
 **Never show 0% for an untouched topic.** No attempts means no accuracy, not
 an accuracy of nothing.

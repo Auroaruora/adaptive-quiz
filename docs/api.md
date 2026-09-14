@@ -217,7 +217,7 @@ The frontend is served from a different origin than the API, so the
 browser preflights every JSON `POST`. The API answers for the origins in
 `CORS_ORIGINS` (comma-separated), which defaults to the local Next.js dev
 server at `http://localhost:3000` when unset. The deployed origin is added
-in Phase 6 as configuration.
+in Phase 5 as configuration.
 
 Only what the endpoints use is granted: `GET` and `POST`, the
 `Content-Type` header, and no credentials. Identity travels as a `userId`
