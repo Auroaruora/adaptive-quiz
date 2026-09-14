@@ -1,0 +1,50 @@
+# Production overlay for the EC2 instance. Layered over docker-compose.yml:
+#
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml \
+#     --profile app up -d caddy backend frontend
+#
+# Services are named on the command line so the local mysql service is
+# never started: the backend's dependency on it is reset below, because
+# on the server MYSQL_HOST points at RDS. scripts/deploy.sh wraps this.
+#
+# Caddy is the only thing that publishes ports. The backend and frontend
+# lose their host ports here and are reached over the compose network.
+
+services:
+  backend:
+    ports: !reset []
+    depends_on: !reset {}
+    restart: always
+    environment:
+      MYSQL_HOST: ${MYSQL_HOST:?set to the RDS endpoint}
+
+  frontend:
+    ports: !reset []
+    restart: always
+    build:
+      args:
+        # No local fallback here: the browser has to call the public origin.
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:?set to https://<site>/api}
+
+  caddy:
+    image: caddy:2.10-alpine
+    profiles: ["app"]
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:-:80}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      # Certificates live here; losing them means re-issuing, which
+      # Let's Encrypt rate-limits.
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - backend
+      - frontend
+
+volumes:
+  caddy_data:
+  caddy_config:

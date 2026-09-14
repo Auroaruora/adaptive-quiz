@@ -1,0 +1,19 @@
+# Reverse proxy in front of the two app containers, so the browser sees one
+# origin. SITE_ADDRESS comes from the environment: a bare hostname such as
+# gradient-quiz.duckdns.org makes Caddy obtain and renew a certificate on
+# its own and redirect HTTP to HTTPS; ":80" serves plain HTTP on whatever
+# address the server has, for when there is no name to certify.
+
+{$SITE_ADDRESS} {
+	# handle_path strips the prefix, so the backend keeps its routes at the
+	# root and knows nothing about the proxy. /api/topics becomes /topics.
+	handle_path /api/* {
+		reverse_proxy backend:8000
+	}
+
+	handle {
+		reverse_proxy frontend:3000
+	}
+
+	encode gzip
+}
