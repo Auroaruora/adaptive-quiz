@@ -322,6 +322,14 @@ class TestSubmitAnswer:
         )
         assert response.status_code == 404
 
+    async def test_rejects_a_non_positive_id(self, client, user_id):
+        """The same rule as the query params, so a client sees one answer."""
+        response = await client.post(
+            "/submit-answer",
+            json={"userId": user_id, "questionId": 0, "selectedOptionId": 1},
+        )
+        assert response.status_code == 422
+
 
 class TestTopicCompletion:
     """Working a topic to completion through the API."""
@@ -478,6 +486,10 @@ class TestProgress:
         assert logs["summary"]["answered"] == 1
         assert logs["summary"]["correct"] == 0
         assert logs["summary"]["mastered"] == 0
+
+    async def test_rejects_a_non_positive_id(self, client):
+        response = await client.get("/progress/0")
+        assert response.status_code == 422
 
     async def test_unknown_user_is_not_found(self, client):
         response = await client.get("/progress/99999999")

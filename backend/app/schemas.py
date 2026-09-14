@@ -106,9 +106,9 @@ class NextQuestionOut(_Wire):
 class AnswerCreate(_Wire):
     """Body of POST /submit-answer."""
 
-    user_id: int
-    question_id: int
-    selected_option_id: int
+    user_id: int = Field(gt=0)
+    question_id: int = Field(gt=0)
+    selected_option_id: int = Field(gt=0)
 
 
 class FeedbackOut(_Wire):

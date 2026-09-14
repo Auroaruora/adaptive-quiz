@@ -1,6 +1,6 @@
 """Reporting a student's history, for the dashboard."""
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Path, status
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -13,7 +13,7 @@ router = APIRouter(tags=["progress"])
 
 @router.get("/progress/{user_id}", response_model=schemas.ProgressOut)
 async def progress(
-    user_id: int,
+    user_id: int = Path(gt=0),
     session: AsyncSession = Depends(get_session),
 ) -> schemas.ProgressOut:
     """Returns per-topic ability history for one student.
