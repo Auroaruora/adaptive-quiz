@@ -273,3 +273,46 @@ An Elastic IP is free while attached to a running instance and billed
 hourly while it is not. Stopping the instance to save money keeps the IP
 attached; terminating the instance without releasing the IP is the case
 that costs.
+
+### Verified live
+
+Checked on 2026-09-14 from outside AWS, against
+`https://gradient-quiz.duckdns.org`:
+
+- The certificate is issued by Let's Encrypt and the browser shows no
+  warning; Caddy obtained it on first start.
+- `/api/health` answers, `/api/topics` lists three topics of 18.
+- The full loop over the API: create a user, next question, submit an
+  answer, progress. The options in a served question carry only `id`,
+  `position` and `text`, so the secrecy rule holds in production.
+- The dashboard renders after the name prompt, with the placement panel
+  and the three topic cards.
+
+### Things that went wrong, so they do not again
+
+- **DuckDNS filled in the wrong address.** Clicking update ip with the
+  field empty records the address of the browser that clicked, so the
+  name pointed at a home router and the browser showed that router's
+  self-signed certificate. Type the Elastic IP before clicking.
+- **The master password drifted.** It was reset several times from
+  different terminal windows, and the copy in the server's `.env` ended
+  up from a different attempt than the one the database had. AWS cannot
+  read a password back, so the only cure was one more reset where the
+  same shell variable fed both `modify-db-instance` and, over `ssh`, a
+  `sed` into the server's `.env`. Compare the two ends with a hash of the
+  value rather than by eye:
+
+  ```bash
+  printf %s "$RDS_PASSWORD" | shasum -a 256 | cut -c1-8
+  ssh ... "grep '^MYSQL_PASSWORD=' ~/adaptive-quiz/.env | cut -d= -f2- | tr -d '\n' | sha256sum | cut -c1-8"
+  ```
+
+- **Same path on both machines.** `~/adaptive-quiz/.env` exists on the
+  laptop and on the server. An edit meant for the server, run in a
+  laptop window, overwrote the local development credentials. The
+  prompt says which machine a window is: `ubuntu@ip-...` is the server.
+- **`MYSQL_ROOT_PASSWORD` warning.** Compose warns that it is unset on
+  the server. The variable belongs to the local `mysql` service, which
+  the server never starts, so the warning is noise. It is left in place
+  rather than given a default, because a default would hide the same
+  variable genuinely missing on a laptop.

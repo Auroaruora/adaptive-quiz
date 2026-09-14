@@ -439,8 +439,15 @@ Sessions — every sitting is a fixed run, then a board:
       admits 3306 only from web), MySQL 8.4.11 on `db.t4g.micro`, 20 GB
       encrypted gp3, single AZ, no public access, one day of backups.
       First connection, migrations and seed wait for the EC2 instance
-- [ ] Deploy backend + frontend to AWS (EC2)
-- [ ] Confirm live demo works end-to-end
+- [x] Deploy backend + frontend to AWS (EC2) — `t4g.small`, Ubuntu 24.04
+      ARM, Elastic IP `3.220.9.193`, images built on the box from the
+      public GitHub repo; Caddy in front on 80/443 with automatic TLS for
+      `gradient-quiz.duckdns.org`; `scripts/server-setup.sh` once,
+      `scripts/deploy.sh` per release. Recorded in `docs/deploy.md`
+- [x] Confirm live demo works end-to-end — https://gradient-quiz.duckdns.org
+      serves the dashboard over a Let's Encrypt certificate; the API loop
+      (user, next question, answer, progress) checked from outside AWS,
+      with the secrecy rule holding on served options
 
 ### Phase 6 — Documentation polish
 - [ ] README: architecture diagram, setup instructions, demo link
