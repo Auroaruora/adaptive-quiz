@@ -44,21 +44,26 @@ async def _require(session: AsyncSession, model, key, what: str):
 async def next_question(
     user_id: int = Query(alias="userId", gt=0),
     topic_id: int = Query(alias="topicId", gt=0),
-    tag: str | None = Query(default=None, max_length=50),
+    tag: list[str] = Query(default=[]),
+    exclude: list[int] = Query(default=[]),
     session: AsyncSession = Depends(get_session),
 ) -> schemas.NextQuestionOut:
-    """Serves the next question, optionally from one concept only.
+    """Serves the next question, optionally narrowed.
 
     Args:
         user_id: Student to serve.
         topic_id: Topic to serve from.
-        tag: Restricts the pool to one concept, for practising a single
-            weak spot. Omit to serve the whole topic.
+        tag: Repeatable. Restricts the pool to questions carrying any of
+            these concepts, for practising weak spots. Omit to serve the
+            whole topic.
+        exclude: Repeatable. Question ids already asked this session,
+            which are never served again however the tiers fall.
         session: Injected database session.
 
     Returns:
-        The next question, or a completion signal — meaning the whole
-        topic is finished, or that one concept is, when `tag` is given.
+        The next question, or a completion signal meaning nothing is left
+        after the narrowing: the whole topic, those concepts, or this
+        session's pool.
     """
     await _require(session, User, user_id, "user")
     await _require(session, Topic, topic_id, "topic")
@@ -73,7 +78,8 @@ async def next_question(
         user_id=user_id,
         topic_id=topic_id,
         theta=ability.theta,
-        tag_slug=tag,
+        tag_slugs=tag,
+        exclude=exclude,
     )
 
 

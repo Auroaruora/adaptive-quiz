@@ -21,7 +21,7 @@ similarity lives in `tags`.
 import collections
 import datetime
 import random
-from collections.abc import Mapping
+from collections.abc import Collection, Mapping, Sequence
 
 from sqlalchemy import Select, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -54,16 +54,38 @@ def _latest_attempt_ids(user_id: int, topic_id: int) -> Select:
     )
 
 
-def _tagged(tag_slug: str) -> Select:
-    """Selects the ids of questions carrying a tag."""
+def _tagged(tag_slugs: Sequence[str]) -> Select:
+    """Selects the ids of questions carrying any of the tags."""
     return (
         select(QuestionTag.question_id)
         .join(Tag, Tag.id == QuestionTag.tag_id)
-        .where(Tag.slug == tag_slug)
+        .where(Tag.slug.in_(tag_slugs))
     )
 
 
-def _unseen(user_id: int, topic_id: int, tag_slug: str | None = None) -> Select:
+def _narrowed(
+    query: Select,
+    tag_slugs: Sequence[str] | None,
+    exclude: Collection[int],
+) -> Select:
+    """Applies the concept filter and the session's exclusions to a tier.
+
+    Both tiers narrow the same way, so a question excluded from the unseen
+    tier cannot slip back in through the answered-wrong one.
+    """
+    if tag_slugs:
+        query = query.where(Question.id.in_(_tagged(tag_slugs)))
+    if exclude:
+        query = query.where(Question.id.not_in(list(exclude)))
+    return query
+
+
+def _unseen(
+    user_id: int,
+    topic_id: int,
+    tag_slugs: Sequence[str] | None = None,
+    exclude: Collection[int] = (),
+) -> Select:
     """Selects active questions the student has never attempted."""
     attempted = select(Attempt.question_id).where(
         Attempt.user_id == user_id, Attempt.topic_id == topic_id
@@ -73,13 +95,14 @@ def _unseen(user_id: int, topic_id: int, tag_slug: str | None = None) -> Select:
         Question.is_active.is_(True),
         Question.id.not_in(attempted),
     )
-    if tag_slug is not None:
-        query = query.where(Question.id.in_(_tagged(tag_slug)))
-    return query
+    return _narrowed(query, tag_slugs, exclude)
 
 
 def _answered_wrong(
-    user_id: int, topic_id: int, tag_slug: str | None = None
+    user_id: int,
+    topic_id: int,
+    tag_slugs: Sequence[str] | None = None,
+    exclude: Collection[int] = (),
 ) -> Select:
     """Selects active questions whose most recent attempt was wrong.
 
@@ -95,9 +118,7 @@ def _answered_wrong(
         Question.is_active.is_(True),
         Question.id.in_(still_wrong),
     )
-    if tag_slug is not None:
-        query = query.where(Question.id.in_(_tagged(tag_slug)))
-    return query
+    return _narrowed(query, tag_slugs, exclude)
 
 
 def _closest(
@@ -234,7 +255,8 @@ async def choose_question(
     theta: float,
     rng: random.Random | None = None,
     now: datetime.datetime | None = None,
-    tag_slug: str | None = None,
+    tag_slugs: Sequence[str] | None = None,
+    exclude: Collection[int] = (),
 ) -> Question | None:
     """Chooses the next question for a student in one topic.
 
@@ -250,19 +272,25 @@ async def choose_question(
         theta: Student's current ability in this topic.
         rng: Source of randomness, injectable so tests can pin it.
         now: Current time, injectable so tests can age mistakes.
-        tag_slug: Restricts the pool to one concept, for practising a
-            single weak spot. None serves the whole topic.
+        tag_slugs: Restricts the pool to questions carrying any of these
+            concepts, for practising weak spots. None or empty serves the
+            whole topic.
+        exclude: Question ids never to serve, however the tiers fall.
+            A session passes what it has already asked, so nothing repeats
+            within one sitting.
 
     Returns:
-        The chosen question, or None when there is nothing left — the
-        whole topic when unfiltered, or that one concept when filtered.
+        The chosen question, or None when nothing is left after the
+        narrowing: the whole topic, one concept, or one session's pool.
     """
     rng = rng or random.Random()
     now = now or datetime.datetime.now(datetime.UTC).replace(tzinfo=None)
 
     mistakes = await _mistake_times(session, user_id=user_id, topic_id=topic_id)
 
-    unseen = list(await session.scalars(_unseen(user_id, topic_id, tag_slug)))
+    unseen = list(
+        await session.scalars(_unseen(user_id, topic_id, tag_slugs, exclude))
+    )
     if unseen:
         return _steered(
             unseen,
@@ -274,7 +302,9 @@ async def choose_question(
         )
 
     wrong = list(
-        await session.scalars(_answered_wrong(user_id, topic_id, tag_slug))
+        await session.scalars(
+            _answered_wrong(user_id, topic_id, tag_slugs, exclude)
+        )
     )
     if not wrong:
         return None

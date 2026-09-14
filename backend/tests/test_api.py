@@ -8,6 +8,7 @@ is submitted, and that rule is only worth anything if something checks it.
 import pytest
 from sqlalchemy import func, select, update
 
+from app import selection
 from app.db.models import Attempt, Question, QuestionOption, QuestionTag, Tag
 
 
@@ -129,18 +130,29 @@ class TestNextQuestion:
     async def test_starts_at_a_question_of_middling_difficulty(
         self, client, user_id, topic_id, session
     ):
-        """A new student sits at theta 0, so b = 0 items are nearest."""
+        """A new student sits at theta 0, so the nearest items are served.
+
+        Difficulties drift as real answers land in the development
+        database, so this checks the rule rather than a seeded value: the
+        first question is one of the closest few to zero.
+        """
         body = (
             await client.get(
                 f"/next-question?userId={user_id}&topicId={topic_id}"
             )
         ).json()
-        difficulty = await session.scalar(
-            select(Question.difficulty_b).where(
-                Question.id == body["question"]["id"]
+        nearest = list(
+            await session.scalars(
+                select(Question.id)
+                .where(
+                    Question.topic_id == topic_id,
+                    Question.is_active.is_(True),
+                )
+                .order_by(func.abs(Question.difficulty_b))
+                .limit(selection.CANDIDATE_POOL_SIZE)
             )
         )
-        assert difficulty == pytest.approx(0.0)
+        assert body["question"]["id"] in nearest
 
     async def test_unknown_user_is_not_found(self, client, topic_id):
         response = await client.get(
@@ -688,3 +700,104 @@ class TestPractisingOneTag:
     ):
         body = await self._slug_of_served(client, user_id, topic_id)
         assert body["question"] is not None
+
+
+async def _tagged_ids(session, topic_id, *slugs):
+    rows = await session.scalars(
+        select(QuestionTag.question_id)
+        .join(Tag, Tag.id == QuestionTag.tag_id)
+        .join(Question, Question.id == QuestionTag.question_id)
+        .where(Tag.slug.in_(slugs), Question.topic_id == topic_id)
+    )
+    return set(rows)
+
+
+class TestSessions:
+    """GET /next-question?exclude=&tag=&tag= — one sitting, no repeats."""
+
+    @staticmethod
+    def _url(user_id, topic_id, exclude=(), tags=()):
+        query = f"/next-question?userId={user_id}&topicId={topic_id}"
+        query += "".join(f"&exclude={q}" for q in exclude)
+        query += "".join(f"&tag={t}" for t in tags)
+        return query
+
+    async def test_excluded_questions_are_never_served(
+        self, client, user_id, topic_id
+    ):
+        """Passing back everything served so far walks the whole topic once."""
+        served = []
+        for _ in range(30):
+            body = (
+                await client.get(self._url(user_id, topic_id, served))
+            ).json()
+            if body["complete"]:
+                break
+            assert body["question"]["id"] not in served
+            served.append(body["question"]["id"])
+        assert len(served) == 18
+
+    async def test_exclusion_holds_in_the_answered_wrong_tier(
+        self, client, user_id, topic_id, session
+    ):
+        """A question just got wrong must not come straight back."""
+        body = (
+            await client.get(
+                self._url(user_id, topic_id, tags=["change-of-base"])
+            )
+        ).json()
+        first = body["question"]["id"]
+        served = [first]
+        option = await _wrong_option_id(session, first)
+        await _answer(client, user_id, first, option)
+
+        for _ in range(20):
+            body = (
+                await client.get(
+                    self._url(user_id, topic_id, served, ["change-of-base"])
+                )
+            ).json()
+            if body["complete"]:
+                break
+            qid = body["question"]["id"]
+            assert qid != first
+            served.append(qid)
+            await _answer(
+                client, user_id, qid, await _correct_option_id(session, qid)
+            )
+        assert body["complete"] is True
+
+        # With the rest mastered and the exclusion lifted, the wrong one is
+        # offered again: the session, not the concept, is what ran out.
+        again = (
+            await client.get(
+                self._url(user_id, topic_id, tags=["change-of-base"])
+            )
+        ).json()
+        assert again["question"]["id"] == first
+
+    async def test_several_tags_pool_the_union(
+        self, client, user_id, topic_id, session
+    ):
+        expected = await _tagged_ids(
+            session, topic_id, "change-of-base", "log-definition"
+        )
+        served = []
+        for _ in range(30):
+            body = (
+                await client.get(
+                    self._url(
+                        user_id,
+                        topic_id,
+                        served,
+                        ["change-of-base", "log-definition"],
+                    )
+                )
+            ).json()
+            if body["complete"]:
+                break
+            served.append(body["question"]["id"])
+        assert set(served) == expected
+        assert len(expected) > len(
+            await _tagged_ids(session, topic_id, "change-of-base")
+        )

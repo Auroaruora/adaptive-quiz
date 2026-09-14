@@ -56,15 +56,25 @@ that is stored, and names need not be unique.
 ← 201 { "id": 7, "displayName": "Ada", "createdAt": "..." }
 ```
 
-### `GET /next-question?userId=&topicId=&tag=`
+### `GET /next-question?userId=&topicId=&tag=&exclude=`
 
-Serves the next question. `tag` is optional and narrows the pool to one
-concept, for drilling a single weak spot — the slug comes from a question's
-`tags` or from a topic's `weakSpots`.
+Serves the next question. Two optional, repeatable parameters narrow the
+pool:
 
-When a tag is given, `complete: true` means *that concept* is finished, not
-the topic. An unknown tag serves nothing and reports complete, since a pool
-of no questions is an exhausted pool.
+- `tag` restricts it to questions carrying **any** of the given concepts,
+  for practising weak spots. Slugs come from a question's `tags` or a
+  topic's `weakSpots`. `?tag=chain-rule&tag=product-rule` pools the union.
+- `exclude` lists question ids never to serve, however the tiers fall. A
+  session passes back everything it has already asked, so nothing repeats
+  within one sitting; the backend stays stateless and the rule is
+  testable. `?exclude=200&exclude=201`.
+
+`complete: true` means nothing is left **after the narrowing**: the whole
+topic when unfiltered, those concepts when tagged, or this session's pool
+when excluding. It does not by itself mean the topic is mastered; the
+dashboard's `summary.mastered` against `summary.total` says that. An
+unknown tag serves nothing and reports complete, since a pool of no
+questions is an exhausted pool.
 
 ```
 ← { "question": { "id": 200, "topicSlug": "logarithms", "stem": "...",
@@ -146,6 +156,12 @@ Two tiers, in order:
    student keeps getting wrong matters more than what is well matched, so
    ranking is by *mistake urgency* rather than by difficulty.
 3. Neither left → `complete: true`.
+
+`tag` and `exclude` narrow both tiers alike, so a question excluded from
+the first cannot come back through the second. That is what stops a
+question just answered wrong from being served again in the same session.
+`tests/test_api.py::TestSessions` walks a topic with a growing exclusion
+list and checks nothing repeats.
 
 ### Time in the second tier
 

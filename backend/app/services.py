@@ -7,6 +7,7 @@ every call site.
 
 import datetime
 import random
+from collections.abc import Collection, Sequence
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -128,7 +129,8 @@ async def next_question_payload(
     topic_id: int,
     theta: float,
     rng: random.Random | None = None,
-    tag_slug: str | None = None,
+    tag_slugs: Sequence[str] | None = None,
+    exclude: Collection[int] = (),
 ) -> schemas.NextQuestionOut:
     """Chooses the next question and wraps it with the current ability.
 
@@ -138,7 +140,8 @@ async def next_question_payload(
         topic_id: Topic to serve from.
         theta: Student's current ability in this topic.
         rng: Source of randomness, injectable so tests can pin it.
-        tag_slug: Restricts the pool to one concept.
+        tag_slugs: Restricts the pool to questions carrying any of these.
+        exclude: Question ids already served this session.
 
     Returns:
         The next question, or a completion signal when none is left.
@@ -149,7 +152,8 @@ async def next_question_payload(
         topic_id=topic_id,
         theta=theta,
         rng=rng,
-        tag_slug=tag_slug,
+        tag_slugs=tag_slugs,
+        exclude=exclude,
     )
     return schemas.NextQuestionOut(
         question=(
