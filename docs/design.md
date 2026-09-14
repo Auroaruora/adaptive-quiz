@@ -170,6 +170,26 @@ out as three empty boxes.
 ### Quiz
 One question, four options, a progress indicator. The working screen.
 
+**Every sitting is a session**: a fixed run of up to ten questions from
+one topic or set of concepts, with no repeats. The header is the same for
+placement, practice and review: the topic, a step counter, and a segmented
+bar whose answered segments take the colour of their outcome, `correct`
+green or `incorrect` orange. The counter beside it says "2 wrong" in words,
+so colour is never the only channel.
+
+Concept chips are labels here, never buttons. Changing what a session is
+about halfway through undermined the session; that choice belongs to the
+board at the end. A pool with fewer questions than the run ends the session
+early rather than looping.
+
+### Session board
+What every session ends on. The number wrong is the hero in the screen's
+one dark panel; the wrong questions follow, each with the answer given and
+the right one, then the concepts behind them. Three ways on: go over the
+wrong ones (the feedback exactly as it was, nothing re-answered), practise
+those concepts (a new session narrowed to them), or back to topics. A
+session with nothing wrong offers only the way back.
+
 ### Feedback
 A state of the quiz screen rather than a separate route, but its own design
 problem. Shows the chosen option marked correct or incorrect, the ability
@@ -205,10 +225,9 @@ cannot act on a logit.
 
 ### Placement
 The first session. Four questions from each topic, served by the ordinary
-next-question selection, with a twelve-segment bar in place of the mastery
-bar and the concept chips inert. Every attempt counts toward accuracy, and
-the copy says so by promising an explanation for each answer rather than
-claiming nothing is graded.
+next-question selection, ending on the same board as any other session.
+Every attempt counts toward accuracy, and the copy says so by promising an
+explanation for each answer rather than claiming nothing is graded.
 
 ### Name prompt
 Rendered in place of whichever screen needed a student and found none, as

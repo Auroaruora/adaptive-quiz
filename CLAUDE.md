@@ -172,9 +172,13 @@ frontend/
       SolutionSteps.tsx
       AbilityGain.tsx   # renders only when ability rises; see design.md
       MasteryBar.tsx    # progress through a topic, counted in mastered
-      TagChips.tsx      # concepts as chips; buttons when practice can narrow
-      QuizScreen.tsx    # asking and feedback as one screen; placement mode
-      TopicQuiz.tsx     # the loop on live data; tag lives in the URL
+      TagChips.tsx      # concepts as chips; labels only, never buttons
+      QuizScreen.tsx    # asking and feedback as one screen; session header
+    session/
+      Session.tsx       # one sitting: sources -> questions -> board; no repeats
+      SessionBoard.tsx  # how many wrong, the wrong ones, review and practise
+      SessionReview.tsx # walks the wrong ones as they were at feedback time
+      TopicSession.tsx  # /quiz/[topic] builds a one-source session; ?tags=
     dashboard/
       Dashboard.tsx     # landing screen; placement panel is data-driven
       DashboardPage.tsx # fetches progress; a stale user id re-prompts
@@ -182,7 +186,7 @@ frontend/
       PlacementPanel.tsx# the dark panel, shown until placed or skipped
       WeakSpots.tsx     # concepts being got wrong; replaced the theta chart
     placement/
-      Placement.tsx     # twelve-step run, four per topic, segmented bar
+      Placement.tsx     # a three-source session, four per topic
     complete/
       TopicComplete.tsx # reached when the API reports complete: true
       AttemptStrip.tsx  # every attempt in order; replaced the sparkline
@@ -391,6 +395,19 @@ Each phase ends with something runnable/testable before moving to the next.
       narrowing to the question's most specific concept
 - [x] Replace the ability sparkline on the topic complete screen with the
       run as a strip of attempts, plus weak spots to practise
+
+Sessions — every sitting is a fixed run, then a board:
+- [x] `exclude` on next-question, repeatable, so nothing repeats within a
+      session however the tiers fall; `tag` repeatable, pooling the union
+- [x] One `Session` component for placement and practice, differing only
+      in sources: four per topic, or up to ten from one topic or concepts
+- [x] The bar colours each answered segment by outcome, green or orange
+- [x] No narrowing mid-session: chips are labels, practise-similar is gone
+- [x] A short pool ends the session early; the board says how many it got to
+- [x] The board: how many wrong, each wrong question with the answer given
+      and the right one, "go over them" (review from the stored feedback),
+      "practise these concepts" (a new session on the rarest tag of each),
+      and a route to the topic summary once every question is mastered
 
 ### Phase 5 — Caching layer
 - [ ] Add Valkey for caching the "next question candidate pool" per session
