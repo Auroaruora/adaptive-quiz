@@ -96,9 +96,13 @@ export type OptionState =
 export interface TopicSummary {
   theta: number;
   level: AbilityLevel;
+  /** Attempts, not questions. */
   answered: number;
   correct: number;
+  /** Questions last answered correctly. */
   mastered: number;
+  /** Questions last answered wrong. The rest of `total` are unseen. */
+  wrong: number;
   total: number;
 }
 
@@ -108,11 +112,16 @@ export interface SeriesPoint {
   isCorrect: boolean;
 }
 
-/** A concept the student is currently getting wrong. */
+/**
+ * A concept the student is currently getting wrong, with where its
+ * questions stand. Unseen is `total - correct - wrong`.
+ */
 export interface WeakSpot {
   slug: string;
   name: string;
-  missed: number;
+  total: number;
+  correct: number;
+  wrong: number;
 }
 
 export interface TopicProgress {

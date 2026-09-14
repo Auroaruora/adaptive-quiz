@@ -1,7 +1,6 @@
 import { Eyebrow } from "@/components/ui/Eyebrow";
-import { SegmentedBar } from "@/components/ui/SegmentedBar";
+import { Ring, RingLegend, ringLabel } from "@/components/ui/Ring";
 import { WeakSpots } from "./WeakSpots";
-import { accuracy, accuracyLevel } from "@/lib/ability";
 import type { TopicProgress } from "@/lib/types";
 
 interface TopicCardProps {
@@ -15,15 +14,15 @@ interface TopicCardProps {
 /**
  * One topic on the dashboard.
  *
- * An unplaced topic shows the shape of the card it will become rather than
- * zeros: a flat ability bar reading "no data yet" and an empty segmented
- * row. Zeros would imply a score of nothing, which is not what not-started
- * means.
+ * The headline is a ring of the topic's questions — answered right,
+ * answered wrong, not yet practised — with correct out of total in the
+ * middle. An unplaced topic is a plain grey ring reading "0 / 18", which
+ * says "nothing yet" where a zero percent would have said "nothing right".
  *
- * Weak spots sit where a chart of ability over time used to. A rising line
- * described difficulty-matching, which is no longer what the app is for,
- * and a student could not act on it. Named concepts with counts are the
- * same information turned into something to do.
+ * Weak spots sit where a chart of ability over time used to. A rising
+ * line described difficulty-matching, which is no longer what the app is
+ * for, and a student could not act on it. Named concepts with their own
+ * rings are the same information turned into something to do.
  */
 export function TopicCard({
   topic,
@@ -33,7 +32,11 @@ export function TopicCard({
 }: TopicCardProps) {
   const { summary } = topic;
   const placed = summary.answered > 0;
-  const score = accuracy(summary);
+  const counts = {
+    total: summary.total,
+    correct: summary.mastered,
+    wrong: summary.wrong,
+  };
 
   return (
     <article className="border-line bg-surface shadow-raised flex flex-col gap-6 rounded-lg border p-6">
@@ -50,23 +53,25 @@ export function TopicCard({
       </header>
 
       <div className="flex flex-col gap-3">
-        <Eyebrow tone="faint">Accuracy</Eyebrow>
-        {placed && score !== null ? (
-          <div className="flex items-baseline gap-3">
-            <span className="text-h2 text-ink font-mono">{score}%</span>
-            <span className="text-label text-ink-muted capitalize">
-              {accuracyLevel(score)}
+        <Eyebrow tone="faint">Questions</Eyebrow>
+        <div className="flex items-center gap-4">
+          <Ring {...counts} size={72} label={ringLabel(topic.name, counts)}>
+            <span className="font-mono text-mono-xs text-ink">
+              {counts.correct}
+              <span className="text-ink-faint">/{counts.total}</span>
             </span>
-            <span className="text-label text-ink-faint">
-              {summary.correct} of {summary.answered}
+          </Ring>
+          <div className="flex flex-col gap-1">
+            <span className="text-body text-ink">
+              {counts.correct} of {counts.total} correct
             </span>
+            {placed ? (
+              <RingLegend {...counts} />
+            ) : (
+              <span className="text-label text-ink-faint">none tried yet</span>
+            )}
           </div>
-        ) : (
-          <div className="flex items-center gap-3">
-            <span className="bg-line h-1 w-8 rounded-full" />
-            <span className="text-body text-ink-faint">no data yet</span>
-          </div>
-        )}
+        </div>
       </div>
 
       <WeakSpots
@@ -74,21 +79,6 @@ export function TopicCard({
         started={placed}
         onPractise={(tagSlug) => onPractise(topic.slug, tagSlug)}
       />
-
-      <div className="flex flex-col gap-3">
-        <div className="flex items-baseline justify-between gap-3">
-          <span className="text-body text-ink">Skills mastered</span>
-          <span className="font-mono text-mono-xs">
-            <span className="text-ink">{summary.mastered}</span>
-            <span className="text-ink-faint">/{summary.total}</span>
-          </span>
-        </div>
-        <SegmentedBar
-          total={summary.total}
-          filled={summary.mastered}
-          label={`${summary.mastered} of ${summary.total} skills mastered in ${topic.name}`}
-        />
-      </div>
 
       <button
         type="button"
