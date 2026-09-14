@@ -15,15 +15,22 @@ their names.
 ## Shape
 
 ```
-browser ──► EC2 (frontend :3000, backend :8000, docker compose)
+browser ──► https://gradient-quiz.duckdns.org
                     │
-                    ▼  port 3306, VPC-internal only
-              RDS MySQL 8.4 (db.t4g.micro, single AZ)
+                    ▼  Elastic IP, ports 80/443
+              EC2 t4g.small, docker compose
+                caddy ──► /api/*  ──► backend :8000
+                      ──► the rest ──► frontend :3000
+                                          │
+                                          ▼  port 3306, VPC-internal only
+                                  RDS MySQL 8.4 (db.t4g.micro, single AZ)
 ```
 
-One EC2 instance runs both containers from `docker-compose.yml` with the
-`app` profile. The database is a managed RDS instance in the same default
-VPC, with no public address. The only route to it is from the instance.
+One EC2 instance runs three containers: Caddy in front, then the frontend
+and backend behind it, from `docker-compose.yml` layered with
+`docker-compose.prod.yml`. The database is a managed RDS instance in the
+same default VPC, with no public address. The only route to it is from
+the instance.
 
 ---
 
@@ -131,3 +138,138 @@ Endpoint: `adaptive-quiz.c0pcemkgavdr.us-east-1.rds.amazonaws.com`, port
 Nothing can connect yet, by design. The first connection, the Alembic
 upgrade and the seed all run from the EC2 instance using the backend
 image, which is where the security group rule proves itself.
+
+---
+
+## Step 3 — Instance
+
+### Shape on the server
+
+Three containers under Docker Compose, from `docker-compose.yml` layered
+with `docker-compose.prod.yml`: Caddy on 80 and 443, the frontend and the
+backend behind it on the compose network. The browser sees one origin:
+`/api/*` goes to the backend with the prefix stripped, everything else to
+the frontend. Caddy obtains the TLS certificate itself once `SITE_ADDRESS`
+is a hostname.
+
+The hostname is `gradient-quiz.duckdns.org`, a free subdomain from
+DuckDNS. It is a single A record pointed at the Elastic IP, updated by
+hand because the IP never changes. It can be swapped for a bought domain
+by changing three lines in the server's `.env`.
+
+Images are built on the instance from a clone of the public GitHub repo.
+Building on the box keeps the moving parts to one machine; pushing
+prebuilt images to ECR is the natural next step and is noted in Phase 7.
+
+### Sizing
+
+`t4g.small`: 2 GB of memory on ARM. The frontend build needs more than
+the micro's 1 GB, and ARM matches the developer's machine, so the images
+tested locally are the images that run. A 2 GB swap file is added as
+margin. Root volume 20 GB gp3, since each rebuild briefly holds two copies
+of each image.
+
+### Commands
+
+An SSH key generated locally and only the public half imported, so the
+private key never leaves the developer's machine:
+
+```bash
+ssh-keygen -t ed25519 -f ~/.ssh/adaptive-quiz -C adaptive-quiz
+aws ec2 import-key-pair --key-name adaptive-quiz \
+  --public-key-material fileb://~/.ssh/adaptive-quiz.pub
+```
+
+The web security group from step 2 gains the two public ports:
+
+```bash
+WEB_SG=$(aws ec2 describe-security-groups \
+  --filters Name=group-name,Values=adaptive-quiz-web \
+  --query 'SecurityGroups[0].GroupId' --output text)
+aws ec2 authorize-security-group-ingress --group-id "$WEB_SG" \
+  --protocol tcp --port 80 --cidr 0.0.0.0/0
+aws ec2 authorize-security-group-ingress --group-id "$WEB_SG" \
+  --protocol tcp --port 443 --cidr 0.0.0.0/0
+```
+
+The current Ubuntu 24.04 ARM image, looked up rather than hard-coded
+because AMI ids change with every patch release:
+
+```bash
+AMI=$(aws ssm get-parameters --names \
+  /aws/service/canonical/ubuntu/server/24.04/stable/current/arm64/hvm/ebs-gp3/ami-id \
+  --query 'Parameters[0].Value' --output text)
+```
+
+The instance:
+
+```bash
+INSTANCE=$(aws ec2 run-instances \
+  --image-id "$AMI" \
+  --instance-type t4g.small \
+  --key-name adaptive-quiz \
+  --security-group-ids "$WEB_SG" \
+  --block-device-mappings 'DeviceName=/dev/sda1,Ebs={VolumeSize=20,VolumeType=gp3}' \
+  --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=adaptive-quiz},{Key=project,Value=adaptive-quiz}]' \
+  --query 'Instances[0].InstanceId' --output text)
+aws ec2 wait instance-running --instance-ids "$INSTANCE"
+```
+
+An Elastic IP, so the address survives stops and restarts and the DNS
+record is set once:
+
+```bash
+read -r ALLOC PUBLIC_IP < <(aws ec2 allocate-address --domain vpc \
+  --tag-specifications 'ResourceType=elastic-ip,Tags=[{Key=Name,Value=adaptive-quiz}]' \
+  --query '[AllocationId,PublicIp]' --output text)
+aws ec2 associate-address --instance-id "$INSTANCE" --allocation-id "$ALLOC"
+echo "$PUBLIC_IP"
+```
+
+Then, on duckdns.org, paste `PUBLIC_IP` into the current ip field for
+`gradient-quiz` and click update ip.
+
+Elastic IP: `3.220.9.193`.
+
+### On the instance
+
+```bash
+ssh -i ~/.ssh/adaptive-quiz ubuntu@"$PUBLIC_IP"
+```
+
+Once in, `scripts/server-setup.sh` installs Docker, adds swap and clones
+the repo; it is fetched from GitHub because the checkout does not exist
+yet. Log out and back in afterwards so the docker group applies.
+
+Write `~/adaptive-quiz/.env` with these keys. The MySQL values are the RDS
+credentials from step 2; the rest describe the public origin:
+
+```
+MYSQL_HOST=adaptive-quiz.c0pcemkgavdr.us-east-1.rds.amazonaws.com
+MYSQL_USER=
+MYSQL_PASSWORD=
+MYSQL_DATABASE=
+SITE_ADDRESS=gradient-quiz.duckdns.org
+NEXT_PUBLIC_API_URL=https://gradient-quiz.duckdns.org/api
+CORS_ORIGINS=https://gradient-quiz.duckdns.org
+```
+
+Then `scripts/deploy.sh`: it builds the images, applies the migrations
+against RDS, and starts Caddy, the backend and the frontend. The first
+connection to the database happens in the migration step, which is where
+the security-group rule from step 2 is proven. Seeding is a one-time
+load, run by hand once the schema exists:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.prod.yml \
+  --profile app run --rm --no-deps backend python scripts/seed.py
+```
+
+Redeploying after a push is `scripts/deploy.sh` again.
+
+### Elastic IP and cost
+
+An Elastic IP is free while attached to a running instance and billed
+hourly while it is not. Stopping the instance to save money keeps the IP
+attached; terminating the instance without releasing the IP is the case
+that costs.

@@ -74,6 +74,8 @@ CLAUDE.md
 .env                     # local DB credentials (gitignored)
 .env.example             # committed placeholders for .env
 docker-compose.yml       # MySQL by default; backend + frontend behind --profile app
+docker-compose.prod.yml  # server overlay: adds caddy, drops host ports and the mysql dependency
+Caddyfile                # one origin: /api/* to the backend, the rest to the frontend; TLS
 .claude/
   settings.json         # hook config (committed)
   settings.local.json   # machine-specific overrides (gitignored)
@@ -85,6 +87,8 @@ docker-compose.yml       # MySQL by default; backend + frontend behind --profile
     migrate.md          # /migrate — author, apply and verify one migration
 scripts/                # project scripts (journal-tail.sh, etc.)
   migrate-check.sh      # round-trips a migration; destructive, needs --yes
+  server-setup.sh       # once per fresh EC2 instance: docker, swap, clone
+  deploy.sh             # on the server: pull, build, migrate, restart
 journal/                # daily logs — gitignored, never committed
 docs/
   data-model.md         # schema reference + version history (update with every migration)
