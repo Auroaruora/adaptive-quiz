@@ -1,10 +1,13 @@
-import { AbilitySparkline } from "@/components/dashboard/AbilitySparkline";
+import { AttemptStrip } from "./AttemptStrip";
+import { WeakSpots } from "@/components/dashboard/WeakSpots";
 import { accuracy, accuracyLevel } from "@/lib/ability";
 import type { TopicProgress } from "@/lib/types";
 
 interface TopicCompleteProps {
   topic: TopicProgress;
   onBack: () => void;
+  /** Practise one of the concepts still marked weak, if any are. */
+  onPractise?: (tagSlug: string) => void;
 }
 
 interface StatProps {
@@ -39,7 +42,11 @@ function Stat({ label, value, numeric = true }: StatProps) {
  * 23 goes to reach 18 has not done worse than someone who took 18; they
  * have done more work.
  */
-export function TopicComplete({ topic, onBack }: TopicCompleteProps) {
+export function TopicComplete({
+  topic,
+  onBack,
+  onPractise,
+}: TopicCompleteProps) {
   const { summary } = topic;
   const percent = accuracy(summary);
 
@@ -78,12 +85,13 @@ export function TopicComplete({ topic, onBack }: TopicCompleteProps) {
         </div>
 
         <div className="flex flex-col gap-2">
-          <span className="text-label text-ink-muted">Ability over time</span>
-          <AbilitySparkline
-            series={topic.series}
-            label={`Ability across ${summary.answered} answers in ${topic.name}`}
-          />
+          <span className="text-label text-ink-muted">Your run</span>
+          <AttemptStrip series={topic.series} />
         </div>
+
+        {onPractise && topic.weakSpots.length > 0 && (
+          <WeakSpots spots={topic.weakSpots} started onPractise={onPractise} />
+        )}
       </section>
 
       <button
