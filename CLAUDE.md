@@ -70,6 +70,7 @@ time a file or directory is created, moved, renamed, or deleted.**
 
 ```
 CLAUDE.md
+README.md               # the front page: demo link, architecture, setup, why, scale
 .gitignore              # journal/, .env, venv/, node_modules/, etc.
 .env                     # local DB credentials (gitignored)
 .env.example             # committed placeholders for .env
@@ -450,11 +451,19 @@ Sessions — every sitting is a fixed run, then a board:
       with the secrecy rule holding on served options
 
 ### Phase 6 — Documentation polish
-- [ ] README: architecture diagram, setup instructions, demo link
-- [ ] "Why these decisions" section (IRT vs static difficulty vs Elo, MySQL
-      choice, why there is no cache)
-- [ ] "How this would scale" section, with the thresholds below at which a
-      cache would start to matter
+- [x] README: architecture diagram, setup instructions, demo link — a
+      mermaid diagram of the production shape (GitHub renders it), a table
+      pointing each layer at its doc, a summary of the update rule with
+      the real learning rates, local setup as four numbered steps plus
+      tests and the all-in-Docker variant
+- [x] "Why these decisions" section (IRT vs static difficulty vs Elo, MySQL
+      choice, why there is no cache) — plus Rasch vs 2PL/3PL, online vs
+      joint estimation, accuracy on screen instead of theta, no auth, one
+      origin behind Caddy, and the by-hand-but-recorded deployment
+- [x] "How this would scale" section, with the thresholds below at which a
+      cache would start to matter — as a table of pressure, threshold and
+      what changes first, plus offline calibration and a registry-based
+      image pipeline as the two changes that come earlier
 - [ ] Screenshots / short demo GIF
 
 ### Phase 7 — Caching layer (optional)
